@@ -1,0 +1,83 @@
+name: Source preview bridge checks (runtime unvalidated)
+on:
+  workflow_call:
+    inputs:
+      language:
+        required: true
+        type: string
+      protocol_ref:
+        required: false
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  bridge:
+    name: Wolfram bridge only — runtime unvalidated
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: sdk
+          persist-credentials: false
+      - id: pin
+        env:
+          LANGUAGE: ${{ inputs.language }}
+          REQUESTED_REF: ${{ inputs.protocol_ref }}
+        run: |
+          python3 - <<'PY'
+          import os,json,re
+          assert os.environ['LANGUAGE']=='wolfram'
+          lock=json.load(open('sdk/protocol-lock.json'))
+          assert lock['repository']=='licensebox/protocol'
+          ref=os.environ['REQUESTED_REF'] or lock['ref']
+          assert re.fullmatch('[0-9a-f]{40}',ref)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('ref='+ref+'\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          repository: licensebox/protocol
+          ref: ${{ steps.pin.outputs.ref }}
+          path: protocol
+          persist-credentials: false
+      - name: Prepare bridge-only metadata
+        env:
+          CONTRACT_REF: ${{ steps.pin.outputs.ref }}
+        run: python3 protocol/scripts/update_lock.py sdk protocol --language wolfram --preview --ref "$CONTRACT_REF"
+      - id: native
+        run: |
+          python3 - <<'PY'
+          import os,re
+          tag=open('sdk/native-version.txt').read().strip()
+          assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          repository: licensebox/c
+          ref: ${{ steps.native.outputs.tag }}
+          path: native-src
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: sudo apt-get update && sudo apt-get install -y libssl-dev libcurl4-openssl-dev libjson-c-dev libjna-java libgoogle-gson-java
+      - run: |
+          cmake -S native-src -B native-src/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LIBDIR=lib
+          cmake --build native-src/build -j 2
+          cmake --install native-src/build --prefix "$GITHUB_WORKSPACE/native"
+      - name: Compile and test bridge; Wolfram runtime conformance is unavailable
+        working-directory: sdk
+        env:
+          LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
+          LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
+          LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
+        run: bash ci/bridge-test.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tested-protocol-pin
+          path: |
+            sdk/protocol-lock.json
+            sdk/native-version.txt
+          if-no-files-found: error

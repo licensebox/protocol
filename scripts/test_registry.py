@@ -9,4 +9,9 @@ class RegistryTest(unittest.TestCase):
         with self.assertRaises(ValueError): registered({'clients':{}},'ruby')
         with self.assertRaises(ValueError): registered({'clients':{'server':{'repository':'licensebox/server'}}},'server')
 
+    def test_preview_cannot_enter_release_conformance(self):
+        c={'previews':{'wolfram':{'repository':'licensebox/wolfram','native_c':True}}}
+        with self.assertRaises(ValueError):registered(c,'wolfram')
+        self.assertTrue(registered(c,'wolfram',allow_preview=True)['native_c'])
+
 if __name__=='__main__': unittest.main()

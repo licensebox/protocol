@@ -14,6 +14,7 @@ def main():
     parser.add_argument("contract",type=Path)
     parser.add_argument("--ref",required=True)
     parser.add_argument("--language",required=True)
+    parser.add_argument("--preview",action="store_true")
     args=parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}",args.ref):
         parser.error("contract ref must be a full commit SHA")
@@ -23,12 +24,15 @@ def main():
     contract=json.loads((args.contract/"contract.json").read_text())
     if contract["protocol"]!=2 or not isinstance(contract["revision"],int) or contract["revision"]<1:
         parser.error("unsupported contract; implement and review the protocol transition first")
-    client=registered(contract,args.language)
+    client=registered(contract,args.language,allow_preview=args.preview)
+    if args.preview and (args.language!="wolfram" or args.language not in contract.get("previews",{})):
+        parser.error("only the declared Wolfram source preview can use bridge-only validation")
     reference=contract["reference_go"]
     if not re.fullmatch(r"v\d+\.\d+\.\d+",reference):
         parser.error("invalid Go reference release")
     lock={"repository":"licensebox/protocol","ref":args.ref,"protocol":contract["protocol"],
           "revision":contract["revision"],"reference_go":reference,
+          "validation_profile":"bridge-only-unvalidated" if args.preview else "linux-native",
           "vectors_sha256":hashlib.sha256((args.contract/"vectors.json").read_bytes()).hexdigest()}
     (args.sdk/"protocol-lock.json").write_text(json.dumps(lock,indent=2)+"\n")
     if client.get("native_c",False):

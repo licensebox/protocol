@@ -148,6 +148,11 @@ jobs:
         uses: julia-actions/setup-julia@v2
         with:
           version: '1.12'
+      - if: inputs.language == 'matlab'
+        uses: matlab-actions/setup-matlab@v3
+        with:
+          release: R2025b
+          install-system-dependencies: true
       - if: inputs.language == 'swift'
         uses: swift-actions/setup-swift@v2
         with:
@@ -160,21 +165,21 @@ jobs:
         name: Install language toolchain in disposable runner
         working-directory: sdk
         run: if test -f ci/setup.sh; then bash ci/setup.sh; fi
-      - if: steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true'
+      - if: inputs.language != 'matlab' && (steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true')
         working-directory: sdk
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
         run: bash ci/test.sh
-      - if: steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true'
+      - if: inputs.language != 'matlab' && (steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true')
         working-directory: protocol
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
         run: python3 conformance/run.py --adapter bash ../sdk/ci/adapter.sh
-      - if: inputs.language == 'matlab' || inputs.language == 'octave'
+      - if: inputs.language == 'octave'
         name: MEX native identifier string regression
         working-directory: protocol
         env:
@@ -182,6 +187,15 @@ jobs:
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
         run: python3 conformance/mex_strings.py --adapter bash ../sdk/ci/adapter.sh
+      - if: inputs.language == 'matlab'
+        name: MATLAB package, lifecycle and complete shared runtime conformance
+        uses: matlab-actions/run-command@v3
+        env:
+          LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
+          LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
+          LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
+        with:
+          command: cd('sdk'); addpath('ci'); github_ci()
       - uses: actions/upload-artifact@v4
         with:
           name: tested-protocol-pin

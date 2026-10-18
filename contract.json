@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 8,
+  "revision": 10,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -168,12 +168,23 @@
         "erlang",
         "elixir"
       ]
+    },
+    "matlab": {
+      "repository": "licensebox/matlab",
+      "release": "v0.1.0",
+      "native_c": true
     }
   },
   "planned": [
-    "matlab",
     "wolfram"
   ],
   "validated_profile": "linux-native",
-  "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition."
+  "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition.",
+  "previews": {
+    "wolfram": {
+      "repository": "licensebox/wolfram",
+      "native_c": true,
+      "status": "source-preview-runtime-unvalidated"
+    }
+  }
 }
