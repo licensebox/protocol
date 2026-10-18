@@ -215,7 +215,11 @@ def main():
 
     def run(request):
         process = subprocess.run(args.adapter, input=json.dumps(request), text=True, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, timeout=15, check=True)
+                                 stderr=subprocess.PIPE, timeout=15)
+        if process.returncode:
+            # All values used by these adapters are synthetic. Do not include
+            # requests or native bindings in failure diagnostics.
+            raise RuntimeError(f"adapter operation {request['op']} exited {process.returncode}: {process.stderr}")
         return json.loads(process.stdout)
 
     def expect(request, error=None):

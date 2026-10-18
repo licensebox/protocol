@@ -39,6 +39,11 @@ idle periods, changed terms, module access, requests, access links, cumulative
 usage retry IDs, persistent policy refusals, credential copies, explicit seat
 transfer, reinstall, revocation and logout.
 
+The current suite performs 69 checks per SDK, including refusal-state corruption.
+C and C++ run with address and undefined-behavior sanitizers in Linux CI. Go runs
+with its race detector; Python and Node also validate real native identity without
+printing identifiers. See [VALIDATION.md](VALIDATION.md) for install checks.
+
 All test keys, email addresses, user codes and identifiers are **public synthetic
 fixtures**. Never use them in a real product. The suite listens only on loopback;
 it does not connect to production, send mail, or use personal credentials. Native

@@ -42,3 +42,5 @@ with tempfile.NamedTemporaryFile(mode="w",suffix=".md") as file:
     print(run("gh","pr","create","--repo",repo,"--base","main","--head",branch,"--title",f"Sync SDK contract revision {lock['revision']}","--body-file",file.name))
 # Explicit dispatch avoids relying on token-created PR event approval behavior.
 run("gh","workflow","run","test.yml","--repo",repo,"--ref",branch)
+if repo=="licensebox/go":
+    run("gh","workflow","run","conformance.yml","--repo",repo,"--ref",branch)

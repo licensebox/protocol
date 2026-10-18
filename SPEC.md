@@ -80,6 +80,9 @@ version or invalid/retired signing key can require activation again.
 Explicit 3xx/4xx refusals must not become offline fallback, including HTML/non-JSON
 responses. Persist `machine_changed`, `seat_transferred`, `location_denied` and
 `location_unknown` before returning, and refuse cached offline use afterward.
+A saved refusal that is empty, unreadable or malformed must also block cached
+offline access. Connect and successfully renew or explicitly sign in to recover;
+do not interpret corrupted refusal state as an absent policy decision.
 A successful renewal or explicit sign-in clears the persisted refusal. On
 `revoked`, discard the lease and queued usage. Do not automatically transfer a
 seat after `seat_transferred`. Check access before reading or processing user
