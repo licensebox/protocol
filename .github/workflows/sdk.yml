@@ -111,10 +111,19 @@ jobs:
       - if: inputs.language == 'c' || inputs.language == 'cpp'
         run: cmake --build sdk/build -j 2
       - if: inputs.language == 'c'
+        run: ctest --test-dir sdk/build --output-on-failure
+      - if: inputs.language == 'c'
         working-directory: protocol
         run: |
           python3 conformance/run.py --adapter ../sdk/build/licensebox-adapter
           python3 conformance/heartbeat.py --adapter ../sdk/build/licensebox-adapter
+      - if: inputs.language == 'c'
+        working-directory: protocol
+        run: |
+          python3 conformance/run.py --adapter ../sdk/build/licensebox-json-adapter
+          python3 conformance/heartbeat.py --adapter ../sdk/build/licensebox-json-adapter
+      - if: inputs.language == 'cpp'
+        run: python3 -B sdk/tests/candidate_config.py
       - if: inputs.language == 'cpp'
         working-directory: protocol
         run: |

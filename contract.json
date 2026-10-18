@@ -11,7 +11,7 @@
     "python": {
       "repository": "licensebox/python",
       "release": "v0.1.0",
-      "candidate_ref": "44eb29cfd388f2959b7e64be0b1f3ca0ae4b6035"
+      "candidate_ref": "0dec11990041a7d45db9a97abfe0b9e68d3866ee"
     },
     "javascript": {
       "repository": "licensebox/javascript",
