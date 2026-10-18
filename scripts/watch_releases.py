@@ -12,7 +12,7 @@ contract=json.loads(path.read_text())
 changed=[]
 for language,client in contract["clients"].items():
     repo=client["repository"]
-    if repo not in {"licensebox/go","licensebox/python","licensebox/javascript","licensebox/c","licensebox/cpp"}:
+    if repo not in {"licensebox/go","licensebox/python","licensebox/javascript","licensebox/c","licensebox/cpp","licensebox/rust","licensebox/java","licensebox/julia","licensebox/dotnet"}:
         raise SystemExit("unexpected SDK repository")
     result=subprocess.run(["gh","api",f"repos/{repo}/releases/latest"],text=True,capture_output=True)
     if result.returncode:continue  # a first release may not exist yet

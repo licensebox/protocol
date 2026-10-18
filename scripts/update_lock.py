@@ -12,7 +12,7 @@ def main():
     parser.add_argument("sdk",type=Path)
     parser.add_argument("contract",type=Path)
     parser.add_argument("--ref",required=True)
-    parser.add_argument("--language",required=True,choices=["go","python","javascript","c","cpp"])
+    parser.add_argument("--language",required=True,choices=["go","python","javascript","c","cpp","rust","java","julia","dotnet"])
     args=parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}",args.ref):
         parser.error("contract ref must be a full commit SHA")
@@ -29,6 +29,11 @@ def main():
           "revision":contract["revision"],"reference_go":reference,
           "vectors_sha256":hashlib.sha256((args.contract/"vectors.json").read_bytes()).hexdigest()}
     (args.sdk/"protocol-lock.json").write_text(json.dumps(lock,indent=2)+"\n")
+    if args.language in {"rust","java","julia","dotnet"}:
+        dependency=contract["clients"]["c"]["release"]
+        if not re.fullmatch(r"v\d+\.\d+\.\d+",dependency):
+            parser.error("invalid C dependency release")
+        (args.sdk/"native-version.txt").write_text(dependency+"\n")
     if args.language=="cpp":
         dependency=contract["clients"]["c"]["release"]
         if not re.fullmatch(r"v\d+\.\d+\.\d+",dependency):

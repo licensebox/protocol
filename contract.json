@@ -1,15 +1,81 @@
 {
   "protocol": 2,
-  "revision": 1,
+  "revision": 2,
   "reference_go": "v0.6.1",
   "clients": {
-    "go": {"repository": "licensebox/go", "release": "v0.6.1"},
-    "python": {"repository": "licensebox/python", "release": "v0.1.0"},
-    "javascript": {"repository": "licensebox/javascript", "release": "v0.1.0"},
-    "c": {"repository": "licensebox/c", "release": "v0.1.0"},
-    "cpp": {"repository": "licensebox/cpp", "release": "v0.1.0"}
+    "go": {
+      "repository": "licensebox/go",
+      "release": "v0.6.1"
+    },
+    "python": {
+      "repository": "licensebox/python",
+      "release": "v0.1.0"
+    },
+    "javascript": {
+      "repository": "licensebox/javascript",
+      "release": "v0.1.0"
+    },
+    "c": {
+      "repository": "licensebox/c",
+      "release": "v0.2.0"
+    },
+    "cpp": {
+      "repository": "licensebox/cpp",
+      "release": "v0.1.0"
+    },
+    "rust": {
+      "repository": "licensebox/rust",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "java": {
+      "repository": "licensebox/java",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "julia": {
+      "repository": "licensebox/julia",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "dotnet": {
+      "repository": "licensebox/dotnet",
+      "release": "v0.1.0",
+      "native_c": true
+    }
   },
-  "planned": ["java", "rust", "pascal", "dotnet", "wasm"],
+  "planned": [
+    "kotlin",
+    "scala",
+    "clojure",
+    "fsharp",
+    "visual-basic",
+    "swift",
+    "objective-c",
+    "fortran",
+    "r",
+    "matlab",
+    "octave",
+    "wolfram",
+    "dart",
+    "ruby",
+    "php",
+    "zig",
+    "nim",
+    "d",
+    "pascal",
+    "haskell",
+    "ocaml",
+    "elixir",
+    "erlang",
+    "lua",
+    "perl",
+    "tcl",
+    "powershell",
+    "cobol",
+    "shell-cli",
+    "wasm"
+  ],
   "validated_profile": "linux-native",
   "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition."
 }

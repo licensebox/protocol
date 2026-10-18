@@ -8,7 +8,7 @@ Before changing a client, read SPEC.md, contract.json and MAINTAINING.md here.
 - Implement the corresponding change in every affected client. C++ inherits
   behavior from C; keep its C dependency pin current. Go-only admin CLI changes
   do not require language client ports.
-- Run the complete shared suite against Go, Python, Node/TypeScript, C and C++.
+- Run the complete shared suite against every implemented SDK listed in contract.json.
   A failing SDK is a release blocker. Do not weaken a test to make a port pass.
 - Update contract.json's revision and compatibility map. The scheduled sync
   workflows propagate tested contract/dependency pins as PRs to each SDK repo.
