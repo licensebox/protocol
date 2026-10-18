@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 7,
+  "revision": 8,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -124,20 +124,55 @@
       "repository": "licensebox/swift",
       "release": "v0.1.0",
       "native_c": true
+    },
+    "ruby": {
+      "repository": "licensebox/ruby",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "php": {
+      "repository": "licensebox/php",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "dart": {
+      "repository": "licensebox/dart",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "lua": {
+      "repository": "licensebox/lua",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "perl": {
+      "repository": "licensebox/perl",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "tcl": {
+      "repository": "licensebox/tcl",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "powershell": {
+      "repository": "licensebox/powershell",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "beam": {
+      "repository": "licensebox/beam",
+      "release": "v0.1.0",
+      "native_c": true,
+      "languages": [
+        "erlang",
+        "elixir"
+      ]
     }
   },
   "planned": [
     "matlab",
-    "wolfram",
-    "dart",
-    "ruby",
-    "php",
-    "elixir",
-    "erlang",
-    "lua",
-    "perl",
-    "tcl",
-    "powershell"
+    "wolfram"
   ],
   "validated_profile": "linux-native",
   "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition."
