@@ -55,7 +55,8 @@ def main():
             assert not run('wrong-ca','127.0.0.1','wrong.pem')['ok'],'wrong CA authorized access'
             assert not run('wrong-host','localhost','ca.pem')['ok'],'hostname mismatch authorized access'
             assert state.calls==0,'unverified TLS reached the licensing API'
-            assert run('trusted','127.0.0.1','ca.pem')['ok'],'trusted loopback TLS did not activate'
+            trusted=run('trusted','127.0.0.1','ca.pem')
+            assert trusted['ok'],f'trusted loopback TLS did not activate: {trusted}; API calls={state.calls}'
         finally:server.shutdown();server.server_close()
     print('PASS: untrusted CA, wrong CA and hostname mismatch refused; trusted TLS activation succeeds')
 
