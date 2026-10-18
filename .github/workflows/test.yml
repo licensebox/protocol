@@ -23,6 +23,7 @@ jobs:
       - run: python3 -m pip install 'cryptography>=43'
       - run: python3 -B protocol/scripts/test_registry.py
       - run: python3 -B protocol/scripts/test_publisher.py
+      - run: python3 -B protocol/scripts/test_workflow_profiles.py
       - name: Read reference release
         id: reference
         run: |

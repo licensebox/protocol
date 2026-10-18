@@ -52,11 +52,25 @@ jobs:
           CONTRACT_REF: ${{ steps.pin.outputs.ref }}
         run: |
           python3 -B protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
-          python3 - <<'PYCODE'
+          python3 -B - <<'PYCODE'
           import json,os,sys
-          sys.path.insert(0,'protocol/scripts')
-          from registry import registered
-          client=registered(json.load(open('protocol/contract.json')),os.environ['SDK_LANGUAGE'])
+          from pathlib import Path
+          contract=json.load(open('protocol/contract.json'))
+          language=os.environ['SDK_LANGUAGE']
+          if Path('protocol/scripts/registry.py').is_file():
+              sys.path.insert(0,'protocol/scripts')
+              from registry import registered
+              client=registered(contract,language)
+          else:
+              # Original public locks predate registry.py. This immutable
+              # revision alone has the original five non-FFI SDK profiles.
+              assert os.environ['CONTRACT_REF']=='abb8a6f1ae4c4874b431ce38dc1d53ca3d6ce77d'
+              legacy={name:'licensebox/'+name for name in ('go','python','javascript','c','cpp')}
+              assert contract['protocol']==2 and contract['revision']==1
+              assert set(contract['clients'])==set(legacy) and language in legacy
+              client=contract['clients'][language]
+              assert client['repository']==legacy[language]
+              assert client.get('native_c',False) is False and client.get('custom_ci',False) is False
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('native='+str(client.get('native_c',False)).lower()+'\ncustom='+str(client.get('custom_ci',False)).lower()+'\n')
           PYCODE
       - if: inputs.language == 'python'
