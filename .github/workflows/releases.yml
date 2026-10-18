@@ -1,0 +1,21 @@
+name: Watch SDK releases
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  watch:
+    if: github.repository == 'licensebox/protocol'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open compatibility update PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/watch_releases.py

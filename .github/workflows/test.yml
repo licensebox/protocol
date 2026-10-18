@@ -1,0 +1,51 @@
+name: Contract
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference:
+    name: Reference Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: protocol
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: protocol/conformance/go-adapter/go.mod
+      - run: python3 -m pip install 'cryptography>=43'
+      - name: Read reference release
+        id: reference
+        run: |
+          python3 - <<'PY'
+          import json,os,re
+          tag=json.load(open('protocol/contract.json'))['reference_go']
+          assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          repository: licensebox/go
+          ref: ${{ steps.reference.outputs.tag }}
+          path: go-sdk
+          persist-credentials: false
+      - name: Build reference adapter
+        working-directory: protocol/conformance/go-adapter
+        run: |
+          go mod edit -replace "licensebox.dev=$GITHUB_WORKSPACE/go-sdk"
+          GOWORK=off go build -buildvcs=false -o "$GITHUB_WORKSPACE/go-adapter" .
+      - name: Conformance
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+      - name: Deterministic public fixtures
+        working-directory: protocol
+        run: |
+          python3 conformance/run.py --write-vectors
+          git diff --exit-code -- vectors.json

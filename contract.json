@@ -1,0 +1,15 @@
+{
+  "protocol": 2,
+  "revision": 1,
+  "reference_go": "v0.6.1",
+  "clients": {
+    "go": {"repository": "licensebox/go", "release": "v0.6.1"},
+    "python": {"repository": "licensebox/python", "release": "v0.1.0"},
+    "javascript": {"repository": "licensebox/javascript", "release": "v0.1.0"},
+    "c": {"repository": "licensebox/c", "release": "v0.1.0"},
+    "cpp": {"repository": "licensebox/cpp", "release": "v0.1.0"}
+  },
+  "planned": ["java", "rust", "pascal", "dotnet", "wasm"],
+  "validated_profile": "linux-native",
+  "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition."
+}

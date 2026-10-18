@@ -1,0 +1,50 @@
+{
+  "protocol": 2,
+  "revision": 1,
+  "warning": "Public synthetic test keys only; never use these keys in production.",
+  "keys": {
+    "test-key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg"
+  },
+  "now": 1700000000,
+  "product": "demo",
+  "installation_seed": "ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8",
+  "installation_public": "Kay64UG8yvCyLhqU000LxzYeUm0L_hLIl5S8kyKWbdc",
+  "device_message": "licensebox device v2\ndemo\nm1:linux-machine-id:783b8906a4af61095e68f3f0b4468a953be69ddd7afcf35850b501a7361f309e\n2023-11-14T22:13:20Z",
+  "device_signature": "WOWCOJOdriyA9JhGa2mESvsYp-_jFCTuDvS2nwC4Bl8k0Yyuo4XmLFz6Q3kgQfFF7Oy_-8y3MOGhfEqyJIemAA",
+  "call_payload": "{\"modules\":[\"export\"],\"note\":\"café – test\"}",
+  "call_message": "licensebox request v2\neyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTVUMjI6MTM6MjBaIiwidGVybXMiOjF9.1q_AUjHfTNQpsxetkR5WU4vDgLavj9D-E4CFIdD9OMWF6uUOf5NukEyumews4AxGZmj5ghkFSx3Id1eGALOZAA\nm1:linux-machine-id:783b8906a4af61095e68f3f0b4468a953be69ddd7afcf35850b501a7361f309e\n2023-11-14T22:13:20Z\n09fbba5a62f77641812544ad9437d9023ff9af26e26810bb251ba56d9e73d13b",
+  "call_signature": "vY03X0-QTaCjuN-8x-3HCpZXIUgBdw7hRjflT2wKJn-bGQCVkLpU1K3DbyqeBM4m3Jn2hwhKbg89EOVetkRHAQ",
+  "valid_lease": "eyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTVUMjI6MTM6MjBaIiwidGVybXMiOjF9.1q_AUjHfTNQpsxetkR5WU4vDgLavj9D-E4CFIdD9OMWF6uUOf5NukEyumews4AxGZmj5ghkFSx3Id1eGALOZAA",
+  "bindings": [
+    {
+      "product": "demo",
+      "source": "linux-machine-id",
+      "raw_id": "12345678123456789ABC1234567890AB\n",
+      "expected": "m1:linux-machine-id:783b8906a4af61095e68f3f0b4468a953be69ddd7afcf35850b501a7361f309e"
+    },
+    {
+      "product": "demo",
+      "source": "linux-dmi",
+      "raw_id": "12345678-1234-5678-9abc-1234567890ab",
+      "expected": "m1:linux-dmi:763342abd3c7f19d0e69d03c040cf9668bc1434ca942d7903437c45d34f14a05"
+    },
+    {
+      "product": "demo",
+      "source": "macos-platform",
+      "raw_id": "12345678-1234-5678-9abc-1234567890ab",
+      "expected": "m1:macos-platform:061dbe8281ee5375749525f982be034e49a8833d91dda5875fa513c58c971214"
+    },
+    {
+      "product": "demo",
+      "source": "windows-smbios",
+      "raw_id": "12345678123456789abc1234567890ab",
+      "expected": "m1:windows-smbios:4c833c54c1b0f4b6695a79d0c169e22e19e600346a06c66fbaf427f9d050c136"
+    },
+    {
+      "product": "demo",
+      "source": "linux-device-tree",
+      "raw_id": "0123456789abcdef\u0000",
+      "expected": "m1:linux-device-tree:dda48a739970c102100ea53626a94f5ea2d06a465b3b10210a90d7ca900fad1c"
+    }
+  ]
+}

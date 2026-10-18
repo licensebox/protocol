@@ -1,0 +1,113 @@
+name: SDK conformance
+on:
+  workflow_call:
+    inputs:
+      language:
+        required: true
+        type: string
+      protocol_ref:
+        required: false
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: sdk
+          persist-credentials: false
+      - name: Resolve contract pin
+        id: pin
+        env:
+          REQUESTED_REF: ${{ inputs.protocol_ref }}
+          SDK_LANGUAGE: ${{ inputs.language }}
+        run: |
+          python3 - <<'PY'
+          import json,os,re
+          assert os.environ['SDK_LANGUAGE'] in {'go','python','javascript','c','cpp'}
+          lock=json.load(open('sdk/protocol-lock.json'))
+          assert lock['repository']=='licensebox/protocol'
+          ref=os.environ['REQUESTED_REF'] or lock['ref']
+          assert re.fullmatch('[0-9a-f]{40}',ref)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('ref='+ref+'\n')
+          PY
+      - uses: actions/checkout@v4
+        with:
+          repository: licensebox/protocol
+          ref: ${{ steps.pin.outputs.ref }}
+          path: protocol
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install 'cryptography>=43'
+      - name: Prepare tested contract metadata
+        env:
+          SDK_LANGUAGE: ${{ inputs.language }}
+          CONTRACT_REF: ${{ steps.pin.outputs.ref }}
+        run: python3 protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
+      - if: inputs.language == 'python'
+        run: python3 -m pip install -e sdk
+      - if: inputs.language == 'python'
+        working-directory: sdk
+        env:
+          LICENSEBOX_TEST_NATIVE: '1'
+        run: python3 -m unittest discover -s tests
+      - if: inputs.language == 'python'
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter python3 ../sdk/tests/adapter.py
+      - if: inputs.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - if: inputs.language == 'javascript'
+        working-directory: sdk
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - if: inputs.language == 'javascript'
+        working-directory: sdk
+        env:
+          LICENSEBOX_TEST_NATIVE: '1'
+        run: npm test
+      - if: inputs.language == 'javascript'
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter node ../sdk/test/adapter.mjs
+      - if: inputs.language == 'c' || inputs.language == 'cpp'
+        run: sudo apt-get update && sudo apt-get install -y libssl-dev libcurl4-openssl-dev libjson-c-dev
+      - if: inputs.language == 'c' || inputs.language == 'cpp'
+        run: cmake -S sdk -B sdk/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+      - if: inputs.language == 'c' || inputs.language == 'cpp'
+        run: cmake --build sdk/build -j 2
+      - if: inputs.language == 'c'
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter ../sdk/build/licensebox-adapter
+      - if: inputs.language == 'cpp'
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter ../sdk/build/licensebox-cpp-adapter
+      - if: inputs.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: sdk/go.mod
+      - if: inputs.language == 'go'
+        working-directory: sdk
+        env:
+          LICENSEBOX_TEST_NATIVE: '1'
+        run: go test -race ./...
+      - if: inputs.language == 'go'
+        working-directory: protocol/conformance/go-adapter
+        run: |
+          go mod edit -replace "licensebox.dev=$GITHUB_WORKSPACE/sdk"
+          GOWORK=off go build -buildvcs=false -o "$GITHUB_WORKSPACE/go-adapter" .
+      - if: inputs.language == 'go'
+        working-directory: protocol
+        run: python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tested-protocol-pin
+          path: |
+            sdk/protocol-lock.json
+            sdk/c-version.cmake
+          if-no-files-found: error
