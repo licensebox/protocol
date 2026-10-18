@@ -177,12 +177,12 @@
   },
   "planned": [],
   "validated_profile": "linux-native",
-  "notes": "Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram is a separate runtime-unvalidated source preview.",
+  "notes": "Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
   "previews": {
     "wolfram": {
       "repository": "licensebox/wolfram",
       "native_c": true,
-      "status": "source-preview-runtime-unvalidated"
+      "status": "source-preview-local-runtime-validated"
     }
   }
 }

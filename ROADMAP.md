@@ -26,11 +26,13 @@ No release claims desktop-native identity for a standalone browser.
 
 ## Source preview
 
-[Wolfram Language](https://github.com/licensebox/wolfram) is implemented but is a
-clearly marked source preview. Its Java/native bridge compiles and passes
-lifetime/callback tests; Wolfram evaluation and full runtime conformance remain
-unvalidated. Do not publish a stable tag until those tests pass. Bridge-only CI
-and automatic dependency PRs explicitly preserve that status.
+[Wolfram Language](https://github.com/licensebox/wolfram) remains a clearly marked
+source preview. Wolfram Engine 15.0/Linux passed all 69 shared runtime cases,
+TLS checks and package/lifetime/callback checks locally; the exact environment
+and results are recorded in [VALIDATION.md](https://github.com/licensebox/wolfram/blob/main/VALIDATION.md).
+Hosted GitHub CI currently checks only the Java/native bridge. A stable release
+remains gated on repeatable licensed runtime CI running the full suite.
+Automatic dependency PRs retain the bridge-only CI validation profile.
 
 ## Keeping the rollout aligned
 
