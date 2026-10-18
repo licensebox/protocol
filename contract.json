@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 6,
+  "revision": 7,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -94,20 +94,44 @@
       "release": "v0.1.0",
       "custom_ci": true,
       "wasmtime_version": "39.0.0"
+    },
+    "r": {
+      "repository": "licensebox/r",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "haskell": {
+      "repository": "licensebox/haskell",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "ocaml": {
+      "repository": "licensebox/ocaml",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "octave": {
+      "repository": "licensebox/octave",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "objc": {
+      "repository": "licensebox/objc",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "swift": {
+      "repository": "licensebox/swift",
+      "release": "v0.1.0",
+      "native_c": true
     }
   },
   "planned": [
-    "swift",
-    "objective-c",
-    "r",
     "matlab",
-    "octave",
     "wolfram",
     "dart",
     "ruby",
     "php",
-    "haskell",
-    "ocaml",
     "elixir",
     "erlang",
     "lua",
