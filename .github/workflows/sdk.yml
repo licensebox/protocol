@@ -191,6 +191,7 @@ jobs:
         name: MATLAB package, lifecycle and complete shared runtime conformance
         uses: matlab-actions/run-command@v3
         env:
+          LICENSEBOX_INCLUDE_DIR: ${{ github.workspace }}/native/include
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
