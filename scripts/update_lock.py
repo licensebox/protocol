@@ -6,13 +6,14 @@ import json
 from pathlib import Path
 import re
 import subprocess
+from registry import registered
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("sdk",type=Path)
     parser.add_argument("contract",type=Path)
     parser.add_argument("--ref",required=True)
-    parser.add_argument("--language",required=True,choices=["go","python","javascript","c","cpp","rust","java","julia","dotnet"])
+    parser.add_argument("--language",required=True)
     args=parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}",args.ref):
         parser.error("contract ref must be a full commit SHA")
@@ -22,6 +23,7 @@ def main():
     contract=json.loads((args.contract/"contract.json").read_text())
     if contract["protocol"]!=2 or not isinstance(contract["revision"],int) or contract["revision"]<1:
         parser.error("unsupported contract; implement and review the protocol transition first")
+    client=registered(contract,args.language)
     reference=contract["reference_go"]
     if not re.fullmatch(r"v\d+\.\d+\.\d+",reference):
         parser.error("invalid Go reference release")
@@ -29,7 +31,7 @@ def main():
           "revision":contract["revision"],"reference_go":reference,
           "vectors_sha256":hashlib.sha256((args.contract/"vectors.json").read_bytes()).hexdigest()}
     (args.sdk/"protocol-lock.json").write_text(json.dumps(lock,indent=2)+"\n")
-    if args.language in {"rust","java","julia","dotnet"}:
+    if client.get("native_c",False):
         dependency=contract["clients"]["c"]["release"]
         if not re.fullmatch(r"v\d+\.\d+\.\d+",dependency):
             parser.error("invalid C dependency release")

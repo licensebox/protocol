@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+from registry import registered
 
 root=Path(__file__).resolve().parent.parent
 path=root/"contract.json"
@@ -12,8 +13,7 @@ contract=json.loads(path.read_text())
 changed=[]
 for language,client in contract["clients"].items():
     repo=client["repository"]
-    if repo not in {"licensebox/go","licensebox/python","licensebox/javascript","licensebox/c","licensebox/cpp","licensebox/rust","licensebox/java","licensebox/julia","licensebox/dotnet"}:
-        raise SystemExit("unexpected SDK repository")
+    registered(contract,language)
     result=subprocess.run(["gh","api",f"repos/{repo}/releases/latest"],text=True,capture_output=True)
     if result.returncode:continue  # a first release may not exist yet
     release=json.loads(result.stdout)

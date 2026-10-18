@@ -28,7 +28,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json,os,re
-          assert os.environ['SDK_LANGUAGE'] in {'go','python','javascript','c','cpp','rust','java','julia','dotnet'}
+          assert re.fullmatch('[a-z][a-z0-9-]{0,31}',os.environ['SDK_LANGUAGE'])
           lock=json.load(open('sdk/protocol-lock.json'))
           assert lock['repository']=='licensebox/protocol'
           ref=os.environ['REQUESTED_REF'] or lock['ref']
@@ -46,10 +46,19 @@ jobs:
           python-version: '3.12'
       - run: python3 -m pip install 'cryptography>=43'
       - name: Prepare tested contract metadata
+        id: metadata
         env:
           SDK_LANGUAGE: ${{ inputs.language }}
           CONTRACT_REF: ${{ steps.pin.outputs.ref }}
-        run: python3 protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
+        run: |
+          python3 protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
+          python3 - <<'PYCODE'
+          import json,os,sys
+          sys.path.insert(0,'protocol/scripts')
+          from registry import registered
+          client=registered(json.load(open('protocol/contract.json')),os.environ['SDK_LANGUAGE'])
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('native='+str(client.get('native_c',False)).lower()+'\n')
+          PYCODE
       - if: inputs.language == 'python'
         run: python3 -m pip install -e sdk
       - if: inputs.language == 'python'
@@ -104,7 +113,7 @@ jobs:
       - if: inputs.language == 'go'
         working-directory: protocol
         run: python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
         name: Resolve native dependency
         id: native
         run: |
@@ -114,16 +123,16 @@ jobs:
           assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
           with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
           PY
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
         uses: actions/checkout@v4
         with:
           repository: licensebox/c
           ref: ${{ steps.native.outputs.tag }}
           path: native-src
           persist-credentials: false
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
         run: sudo apt-get update && sudo apt-get install -y libssl-dev libcurl4-openssl-dev libjson-c-dev
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
         run: |
           cmake -S native-src -B native-src/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_LIBDIR=lib
           cmake --build native-src/build -j 2
@@ -143,14 +152,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
+        name: Install language toolchain in disposable runner
+        working-directory: sdk
+        run: if test -f ci/setup.sh; then bash ci/setup.sh; fi
+      - if: steps.metadata.outputs.native == 'true'
         working-directory: sdk
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
         run: bash ci/test.sh
-      - if: inputs.language == 'rust' || inputs.language == 'java' || inputs.language == 'julia' || inputs.language == 'dotnet'
+      - if: steps.metadata.outputs.native == 'true'
         working-directory: protocol
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib

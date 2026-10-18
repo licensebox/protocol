@@ -21,6 +21,7 @@ jobs:
         with:
           go-version-file: protocol/conformance/go-adapter/go.mod
       - run: python3 -m pip install 'cryptography>=43'
+      - run: python3 protocol/scripts/test_registry.py
       - name: Read reference release
         id: reference
         run: |
