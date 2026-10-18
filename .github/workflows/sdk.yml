@@ -51,7 +51,7 @@ jobs:
           SDK_LANGUAGE: ${{ inputs.language }}
           CONTRACT_REF: ${{ steps.pin.outputs.ref }}
         run: |
-          python3 protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
+          python3 -B protocol/scripts/update_lock.py sdk protocol --language "$SDK_LANGUAGE" --ref "$CONTRACT_REF"
           python3 - <<'PYCODE'
           import json,os,sys
           sys.path.insert(0,'protocol/scripts')

@@ -18,4 +18,4 @@ jobs:
       - name: Open compatibility update PR
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/watch_releases.py
+        run: python3 -B scripts/watch_releases.py

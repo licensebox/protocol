@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Publish a pretested metadata update; never overwrite an existing bot branch."""
+"""Publish a pretested metadata update; never overwrite an existing bot branch.
+
+Invoke with python3 -B so registry imports cannot pollute the strict untracked
+file guard. The workflow must suppress bytecode, not relax that guard.
+"""
 import json
 import os
 from pathlib import Path

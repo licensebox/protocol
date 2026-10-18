@@ -29,6 +29,14 @@ write permission dispatches the test workflow explicitly after the bot creates
 a PR; GitHub-token-created PR workflows can otherwise require manual approval.
 No workflow auto-approves or auto-merges a PR.
 
+Invoke the metadata publisher as `python3 -B .github/scripts/open_sync_pr.py`.
+The registry import must not create Python bytecode in the fresh checkout: the
+publisher deliberately rejects every unexpected untracked file. Keep this guard
+strict rather than ignoring artifacts created by the publisher itself. The
+isolated `scripts/test_publisher.py` regression exercises the real entry point,
+no-op startup and rejection of unexpected files/source edits without GitHub
+access.
+
 Enable the repository setting allowing Actions to create PRs. GitHub exposes this
 as the combined “Allow GitHub Actions to create and approve pull requests” setting;
 the bot never invokes review approval. Keep the default token permission read.

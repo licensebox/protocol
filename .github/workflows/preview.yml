@@ -43,7 +43,7 @@ jobs:
       - name: Prepare bridge-only metadata
         env:
           CONTRACT_REF: ${{ steps.pin.outputs.ref }}
-        run: python3 protocol/scripts/update_lock.py sdk protocol --language wolfram --preview --ref "$CONTRACT_REF"
+        run: python3 -B protocol/scripts/update_lock.py sdk protocol --language wolfram --preview --ref "$CONTRACT_REF"
       - id: native
         run: |
           python3 - <<'PY'
