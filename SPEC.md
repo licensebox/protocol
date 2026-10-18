@@ -122,7 +122,8 @@ checked before server contact. Never follow redirects carrying signed requests.
 Eligible transport failures and 5xx outages may return an otherwise valid,
 unexpired saved lease with `online=false`. They MUST NOT extend its expiry or
 clear a saved refusal. Recheck time after a failed request. Parent cancellation,
-explicit 3xx/4xx and policy refusals never permit offline fallback. Revocation
+explicit 3xx/4xx and policy refusals never permit offline fallback. Known refusal
+headers remain authoritative when reading the response body fails or times out. Revocation
 discards the lease and usage. Changed terms and invalid leases return an error
 without interactive activation. Successful renewal clears saved refusal state;
 removed modules return `module_denied`, without preserving the old grant.

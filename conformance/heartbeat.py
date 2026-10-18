@@ -31,6 +31,16 @@ def value(machine, host, now=wire.START, *, heartbeat=POLICY, modules=None, term
 class Handler(wire.Handler):
     def do_POST(self):
         state = self.server.state
+        if self.path == "/v1/renew" and state.mode == "stalled403":
+            state.calls += 1
+            self.send_response(403)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", "4096")
+            self.end_headers()
+            self.wfile.write(b"{")
+            self.wfile.flush()
+            threading.Event().wait(4)
+            return
         if self.path == "/heartbeat-redirect-target":
             state.redirect_leaks += 1
             self.send_error(403)
@@ -51,10 +61,29 @@ class Handler(wire.Handler):
         super().do_POST()
 
 
+def public_vectors():
+    key = wire.Ed25519PrivateKey.from_private_bytes(bytes(range(32, 64)))
+    machine = wire.enc(key.public_key().public_bytes_raw())
+    valid = value(machine, wire.HOST_A)
+    return {"protocol": 2, "now": wire.START, "product": "demo",
+            "keys": {"test-key": wire.PUBLIC}, "cases": [
+                {"name": "enabled", "token": signed(valid), "heartbeat": POLICY},
+                {"name": "legacy-disabled", "token": signed(value(machine, wire.HOST_A, heartbeat=None))},
+                {"name": "deadline-exceeds-grace", "token": signed(dict(valid, expires=wire.stamp(wire.START+91))), "error": "malformed"},
+                {"name": "zero-signed-policy", "token": signed(dict(valid, heartbeat={"interval_seconds": 0, "grace_seconds": 0})), "error": "malformed"},
+            ]}
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--adapter", nargs=argparse.REMAINDER, required=True)
+    parser.add_argument("--write-vectors", action="store_true")
+    parser.add_argument("--adapter", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    if args.write_vectors:
+        (Path(__file__).resolve().parents[1]/"heartbeat-vectors.json").write_text(json.dumps(public_vectors(), indent=2)+"\n")
+        return
+    if not args.adapter:
+        parser.error("--adapter is required unless writing vectors")
     total = 0
 
     def request(r, error=None):
@@ -75,7 +104,7 @@ def main():
     machine = wire.enc(key.public_key().public_bytes_raw())
     verify = {"op": "verify", "product": "demo", "keys": {"test-key": wire.PUBLIC}, "now": wire.START}
     valid = value(machine, wire.HOST_A)
-    checked = request(dict(verify, token=signed(valid)))
+    checked = request(dict(verify, token=public_vectors()["cases"][0]["token"]))
     assert checked["heartbeat"] == POLICY, "signed heartbeat policy was lost"
     absent = value(machine, wire.HOST_A, heartbeat=None)
     request(dict(verify, token=signed(absent)))
@@ -138,6 +167,9 @@ def main():
             state.mode = "redirect307"
             call(r, error="http_error")
             assert state.redirect_leaks == 0, "heartbeat forwarded signed renewal credentials to a redirect"
+            r = prepare("stalled-refusal")
+            state.mode = "stalled403"
+            call(r, error="http_error")
             r = prepare("force")
             out = call(r, "heartbeat-repeat")
             assert state.renew_count == 2 and out["online"] is True and out["lease"]["heartbeat"] == POLICY, "heartbeat reused cached success"

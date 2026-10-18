@@ -50,4 +50,5 @@ jobs:
         working-directory: protocol
         run: |
           python3 conformance/run.py --write-vectors
-          git diff --exit-code -- vectors.json
+          python3 conformance/heartbeat.py --write-vectors
+          git diff --exit-code -- vectors.json heartbeat-vectors.json

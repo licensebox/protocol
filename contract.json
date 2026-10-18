@@ -6,12 +6,12 @@
     "go": {
       "repository": "licensebox/go",
       "release": "v0.6.1",
-      "candidate_ref": "ce9c4e9fb91d49d60b7b52dce3413f3991ec8f0a"
+      "candidate_ref": "1ad4fea448de07dc517313b995e558f1de26db5a"
     },
     "python": {
       "repository": "licensebox/python",
       "release": "v0.1.0",
-      "candidate_ref": "0dec11990041a7d45db9a97abfe0b9e68d3866ee"
+      "candidate_ref": "935d8b36fed3deca97bfd36f81121c0248c94e97"
     },
     "javascript": {
       "repository": "licensebox/javascript",
@@ -20,7 +20,7 @@
     "c": {
       "repository": "licensebox/c",
       "release": "v0.3.0",
-      "candidate_ref": "c530e36b4656d9a66cb1b01c977a84df1f458fc3"
+      "candidate_ref": "b35aa2eca13f83f20681ec6083d996f7bcd86306"
     },
     "cpp": {
       "repository": "licensebox/cpp",

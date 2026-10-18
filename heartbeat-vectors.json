@@ -1,0 +1,32 @@
+{
+  "protocol": 2,
+  "now": 1700000000,
+  "product": "demo",
+  "keys": {
+    "test-key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg"
+  },
+  "cases": [
+    {
+      "name": "enabled",
+      "token": "eyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTRUMjI6MTQ6NTBaIiwidGVybXMiOjEsImhlYXJ0YmVhdCI6eyJpbnRlcnZhbF9zZWNvbmRzIjozMCwiZ3JhY2Vfc2Vjb25kcyI6OTB9fQ.2g2S6ixQkzrUDoJd_qcUjurypBeJ3L5ZqNF0PUS7yfEHySlu-KN2Ildc9MIq1F2x0gM3Q3yLpFRvZ3swcLitAg",
+      "heartbeat": {
+        "interval_seconds": 30,
+        "grace_seconds": 90
+      }
+    },
+    {
+      "name": "legacy-disabled",
+      "token": "eyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTVUMjI6MTM6MjBaIiwidGVybXMiOjF9.1q_AUjHfTNQpsxetkR5WU4vDgLavj9D-E4CFIdD9OMWF6uUOf5NukEyumews4AxGZmj5ghkFSx3Id1eGALOZAA"
+    },
+    {
+      "name": "deadline-exceeds-grace",
+      "token": "eyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTRUMjI6MTQ6NTFaIiwidGVybXMiOjEsImhlYXJ0YmVhdCI6eyJpbnRlcnZhbF9zZWNvbmRzIjozMCwiZ3JhY2Vfc2Vjb25kcyI6OTB9fQ.t5VEUnT6wgzZ0mdOYMH8jHU3NP5FVnkvv7FUgu8dM2eQIudpZlYIWvoxFwOFd_rEEj7w9-seO9lYhc8oYfRGAg",
+      "error": "malformed"
+    },
+    {
+      "name": "zero-signed-policy",
+      "token": "eyJ2IjoyLCJraWQiOiJ0ZXN0LWtleSIsInByb2R1Y3QiOiJkZW1vIiwidXNlciI6InN5bnRoZXRpYy11c2VyIiwiZW1haWwiOiJzZGtAZXhhbXBsZS5pbnZhbGlkIiwibWFjaGluZSI6IktheTY0VUc4eXZDeUxocVUwMDBMeHpZZVVtMExfaExJbDVTOGt5S1diZGMiLCJiaW5kaW5nIjoibTE6bGludXgtbWFjaGluZS1pZDo3ODNiODkwNmE0YWY2MTA5NWU2OGYzZjBiNDQ2OGE5NTNiZTY5ZGRkN2FmY2YzNTg1MGI1MDFhNzM2MWYzMDllIiwibW9kdWxlcyI6WyJjb3JlIl0sImlzc3VlZCI6IjIwMjMtMTEtMTRUMjI6MTM6MjBaIiwiZXhwaXJlcyI6IjIwMjMtMTEtMTRUMjI6MTQ6NTBaIiwidGVybXMiOjEsImhlYXJ0YmVhdCI6eyJpbnRlcnZhbF9zZWNvbmRzIjowLCJncmFjZV9zZWNvbmRzIjowfX0.GKo4crcZ5jPUcBy56BiNHrWrCU6QIjQaN_O4MOJqaAiC1T_cWbs49s0YPLXqG_7pZr0FMmr7OQzntzifDLZfBg",
+      "error": "malformed"
+    }
+  ]
+}
