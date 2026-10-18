@@ -57,7 +57,7 @@ jobs:
           sys.path.insert(0,'protocol/scripts')
           from registry import registered
           client=registered(json.load(open('protocol/contract.json')),os.environ['SDK_LANGUAGE'])
-          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('native='+str(client.get('native_c',False)).lower()+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('native='+str(client.get('native_c',False)).lower()+'\ncustom='+str(client.get('custom_ci',False)).lower()+'\n')
           PYCODE
       - if: inputs.language == 'python'
         run: python3 -m pip install -e sdk
@@ -152,18 +152,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      - if: steps.metadata.outputs.native == 'true'
+      - if: steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true'
         name: Install language toolchain in disposable runner
         working-directory: sdk
         run: if test -f ci/setup.sh; then bash ci/setup.sh; fi
-      - if: steps.metadata.outputs.native == 'true'
+      - if: steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true'
         working-directory: sdk
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
         run: bash ci/test.sh
-      - if: steps.metadata.outputs.native == 'true'
+      - if: steps.metadata.outputs.native == 'true' || steps.metadata.outputs.custom == 'true'
         working-directory: protocol
         env:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib

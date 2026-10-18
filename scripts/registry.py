@@ -7,4 +7,6 @@ def registered(contract, language):
         raise ValueError("SDK is not registered in the approved public contract")
     if not isinstance(client.get("native_c", False), bool):
         raise ValueError("native_c must be a boolean")
+    if not isinstance(client.get("custom_ci", False), bool):
+        raise ValueError("custom_ci must be a boolean")
     return client

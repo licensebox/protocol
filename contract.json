@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 4,
+  "revision": 5,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -83,6 +83,17 @@
       "repository": "licensebox/cobol",
       "release": "v0.1.0",
       "native_c": true
+    },
+    "cli": {
+      "repository": "licensebox/cli",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "wasm": {
+      "repository": "licensebox/wasm",
+      "release": "v0.1.0",
+      "custom_ci": true,
+      "host_python": "v0.1.0"
     }
   },
   "planned": [
@@ -102,9 +113,7 @@
     "lua",
     "perl",
     "tcl",
-    "powershell",
-    "shell-cli",
-    "wasm"
+    "powershell"
   ],
   "validated_profile": "linux-native",
   "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition."
