@@ -147,7 +147,7 @@ jobs:
       - if: inputs.language == 'julia'
         uses: julia-actions/setup-julia@v2
         with:
-          version: '1.10'
+          version: '1.12'
       - if: inputs.language == 'dotnet'
         uses: actions/setup-dotnet@v4
         with:

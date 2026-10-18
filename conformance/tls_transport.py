@@ -50,7 +50,9 @@ def main():
                 if ca_bundle is not None:request['ca_bundle']=str(folder/ca_bundle)
                 process=subprocess.run(args.adapter,input=json.dumps(request),text=True,capture_output=True,timeout=30)
                 if process.returncode:raise RuntimeError(f'adapter failed: {process.stderr}')
-                return json.loads(process.stdout)
+                answer=json.loads(process.stdout)
+                if not answer.get("ok") and process.stderr:print(process.stderr.strip())
+                return answer
             assert not run('untrusted','127.0.0.1')['ok'],'untrusted TLS server authorized access'
             assert not run('wrong-ca','127.0.0.1','wrong.pem')['ok'],'wrong CA authorized access'
             assert not run('wrong-host','localhost','ca.pem')['ok'],'hostname mismatch authorized access'
