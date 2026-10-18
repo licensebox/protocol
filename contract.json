@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 2,
+  "revision": 3,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -17,7 +17,7 @@
     },
     "c": {
       "repository": "licensebox/c",
-      "release": "v0.2.0"
+      "release": "v0.3.0"
     },
     "cpp": {
       "repository": "licensebox/cpp",

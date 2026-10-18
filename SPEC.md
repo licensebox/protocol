@@ -2,7 +2,9 @@
 
 API endpoint paths retain `/v1`. The lease and signature domains use v2. All
 requests are JSON over HTTPS. HTTP is permitted only on loopback for development.
-Do not follow redirects with signed bodies. Public keys are administrator-provided
+Do not follow redirects with signed bodies. Native transports may accept an explicit
+CA certificate PEM bundle for environments whose TLS library lacks a default
+trust store. This never disables certificate-chain or hostname verification. Public keys are administrator-provided
 32-byte Ed25519 verification keys, encoded as unpadded base64url. Installation
 private keys never leave the host. Product signing keys and admin credentials
 never belong in an application client.
