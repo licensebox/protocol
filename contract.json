@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 3,
+  "revision": 4,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -31,7 +31,13 @@
     "java": {
       "repository": "licensebox/java",
       "release": "v0.1.0",
-      "native_c": true
+      "native_c": true,
+      "languages": [
+        "java",
+        "kotlin",
+        "scala",
+        "clojure"
+      ]
     },
     "julia": {
       "repository": "licensebox/julia",
@@ -41,18 +47,47 @@
     "dotnet": {
       "repository": "licensebox/dotnet",
       "release": "v0.1.0",
+      "native_c": true,
+      "languages": [
+        "csharp",
+        "fsharp",
+        "visual-basic"
+      ]
+    },
+    "fortran": {
+      "repository": "licensebox/fortran",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "pascal": {
+      "repository": "licensebox/pascal",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "zig": {
+      "repository": "licensebox/zig",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "nim": {
+      "repository": "licensebox/nim",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "d": {
+      "repository": "licensebox/d",
+      "release": "v0.1.0",
+      "native_c": true
+    },
+    "cobol": {
+      "repository": "licensebox/cobol",
+      "release": "v0.1.0",
       "native_c": true
     }
   },
   "planned": [
-    "kotlin",
-    "scala",
-    "clojure",
-    "fsharp",
-    "visual-basic",
     "swift",
     "objective-c",
-    "fortran",
     "r",
     "matlab",
     "octave",
@@ -60,10 +95,6 @@
     "dart",
     "ruby",
     "php",
-    "zig",
-    "nim",
-    "d",
-    "pascal",
     "haskell",
     "ocaml",
     "elixir",
@@ -72,7 +103,6 @@
     "perl",
     "tcl",
     "powershell",
-    "cobol",
     "shell-cli",
     "wasm"
   ],
