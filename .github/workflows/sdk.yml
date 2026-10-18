@@ -148,6 +148,10 @@ jobs:
         uses: julia-actions/setup-julia@v2
         with:
           version: '1.12'
+      - if: inputs.language == 'swift'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.1'
       - if: inputs.language == 'dotnet'
         uses: actions/setup-dotnet@v4
         with:
@@ -177,4 +181,5 @@ jobs:
             sdk/protocol-lock.json
             sdk/c-version.cmake
             sdk/native-version.txt
+            sdk/host-dependencies.txt
           if-no-files-found: error

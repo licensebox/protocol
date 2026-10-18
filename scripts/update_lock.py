@@ -36,6 +36,12 @@ def main():
         if not re.fullmatch(r"v\d+\.\d+\.\d+",dependency):
             parser.error("invalid C dependency release")
         (args.sdk/"native-version.txt").write_text(dependency+"\n")
+    if args.language=="wasm":
+        python_release=contract["clients"]["python"]["release"]
+        runtime=client["wasmtime_version"]
+        if not re.fullmatch(r"v\d+\.\d+\.\d+",python_release) or not re.fullmatch(r"\d+\.\d+\.\d+",runtime):
+            parser.error("invalid Wasm host dependency release")
+        (args.sdk/"host-dependencies.txt").write_text(f"wasmtime=={runtime}\nlicensebox @ git+https://github.com/licensebox/python.git@{python_release}\n")
     if args.language=="cpp":
         dependency=contract["clients"]["c"]["release"]
         if not re.fullmatch(r"v\d+\.\d+\.\d+",dependency):

@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 5,
+  "revision": 6,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -30,7 +30,7 @@
     },
     "java": {
       "repository": "licensebox/java",
-      "release": "v0.1.0",
+      "release": "v0.1.1",
       "native_c": true,
       "languages": [
         "java",
@@ -46,7 +46,7 @@
     },
     "dotnet": {
       "repository": "licensebox/dotnet",
-      "release": "v0.1.0",
+      "release": "v0.1.1",
       "native_c": true,
       "languages": [
         "csharp",
@@ -93,7 +93,7 @@
       "repository": "licensebox/wasm",
       "release": "v0.1.0",
       "custom_ci": true,
-      "host_python": "v0.1.0"
+      "wasmtime_version": "39.0.0"
     }
   },
   "planned": [

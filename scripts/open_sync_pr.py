@@ -16,6 +16,7 @@ lock=json.loads(Path("protocol-lock.json").read_text())
 ref=lock["ref"]
 if not re.fullmatch(r"[0-9a-f]{40}",ref) or lock.get("repository")!="licensebox/protocol":raise SystemExit("invalid contract pin")
 allowed=["protocol-lock.json"]
+if repo=="licensebox/wasm":allowed.append("host-dependencies.txt")
 if repo=="licensebox/cpp":allowed.append("c-version.cmake")
 if Path("native-version.txt").is_file():allowed.append("native-version.txt")
 changed=run("git","diff","--name-only").splitlines()
