@@ -21,18 +21,15 @@ jobs:
         with:
           go-version-file: protocol/conformance/go-adapter/go.mod
       - run: python3 -m pip install 'cryptography>=43'
+      - run: python3 -B protocol/scripts/test_dependency_ref.py
       - run: python3 -B protocol/scripts/test_registry.py
       - run: python3 -B protocol/scripts/test_publisher.py
       - run: python3 -B protocol/scripts/test_workflow_profiles.py
       - name: Read reference release
         id: reference
         run: |
-          python3 - <<'PY'
-          import json,os,re
-          tag=json.load(open('protocol/contract.json'))['reference_go']
-          assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
-          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
-          PY
+          ref=$(python3 -B protocol/scripts/dependency_ref.py go)
+          echo "tag=$ref" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: licensebox/go
@@ -46,7 +43,9 @@ jobs:
           GOWORK=off go build -buildvcs=false -o "$GITHUB_WORKSPACE/go-adapter" .
       - name: Conformance
         working-directory: protocol
-        run: python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+        run: |
+          python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+          python3 conformance/heartbeat.py --adapter "$GITHUB_WORKSPACE/go-adapter"
       - name: Deterministic public fixtures
         working-directory: protocol
         run: |

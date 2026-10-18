@@ -46,12 +46,8 @@ jobs:
         run: python3 -B protocol/scripts/update_lock.py sdk protocol --language wolfram --preview --ref "$CONTRACT_REF"
       - id: native
         run: |
-          python3 - <<'PY'
-          import os,re
-          tag=open('sdk/native-version.txt').read().strip()
-          assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
-          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
-          PY
+          ref=$(python3 -B protocol/scripts/dependency_ref.py c sdk/native-version.txt)
+          echo "tag=$ref" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           repository: licensebox/c

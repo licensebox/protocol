@@ -37,7 +37,7 @@ func errorCode(err error) string {
 		{machine.ErrUnavailable, "identity_unavailable"}, {client.ErrMachineChanged, "machine_changed"},
 		{client.ErrSeatTransferred, "seat_transferred"}, {client.ErrLocationDenied, "location_denied"},
 		{client.ErrRevoked, "revoked"}, {client.ErrDenied, "denied"}, {client.ErrSignInExpired, "sign_in_expired"},
-		{client.ErrOffline, "offline"}, {lease.ErrMalformed, "malformed"}, {lease.ErrVersion, "version"},
+		{client.ErrNotSignedIn, "not_signed_in"}, {client.ErrOffline, "offline"}, {lease.ErrMalformed, "malformed"}, {lease.ErrVersion, "version"},
 		{lease.ErrUnknownKey, "unknown_key"}, {lease.ErrBadSignature, "bad_signature"}, {lease.ErrExpired, "expired"},
 	} {
 		if errors.Is(err, item.err) {
@@ -86,6 +86,19 @@ func main() {
 				value, err = c.Require(ctx, "core")
 				if err == nil {
 					value, err = c.Require(ctx, "core")
+				}
+			case "heartbeat", "heartbeat-repeat", "heartbeat-after-require":
+				if r.Module == "" {
+					r.Module = "core"
+				}
+				if r.Op == "heartbeat-after-require" {
+					_, err = c.Require(ctx, r.Module)
+				}
+				if err == nil {
+					value, err = c.Heartbeat(ctx, r.Module)
+				}
+				if err == nil && r.Op == "heartbeat-repeat" {
+					value, err = c.Heartbeat(ctx, r.Module)
 				}
 			case "status":
 				value, err = c.Status()

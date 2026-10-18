@@ -90,6 +90,52 @@ A successful renewal or explicit sign-in clears the persisted refusal. On
 seat after `seat_transferred`. Check access before reading or processing user
 files. A command-start check does not create a background heartbeat.
 
+## Optional heartbeat checks
+
+A product may configure `heartbeat` as
+`{"interval_seconds":300,"grace_seconds":900}`. Zero/zero disables it (the
+initial default). Enabled values are integers: interval 30–86,400 seconds and
+grace at least the interval, at most 31,536,000 seconds. Omitted product settings
+preserve the existing policy; an explicit zero object disables it.
+
+An enabled policy appears in the signed lease's optional `heartbeat` object.
+Missing or null means no policy. A present object MUST contain valid enabled
+values. Its `expires` MUST be after `issued` and no later than `issued + grace`;
+normal offline and grant limits can shorten it further. The server omits the
+field when disabled. This additive field preserves v2 signature domains and
+original signed bytes. Earlier clients already enforce the shorter expiry.
+
+Every SDK exposes an explicit, synchronous `Heartbeat(module)` operation with
+idiomatic naming. Its result is `{"lease": <verified lease>, "online": true|false}`.
+The module is mandatory and nonempty. The C JSON operation is `heartbeat` with
+`{"module":"core"}`. The operation MUST attempt signed `/v1/renew`, bounded to
+three seconds, even when the process has a fresh lease. It MUST verify the
+renewed lease, replace cached authorization before checking the requested
+module, and preserve usage acknowledgement, identity and refusal rules.
+
+Heartbeat MUST NOT start interactive sign-in, create or rotate an installation
+key, or transfer a seat. A missing saved lease or existing key returns
+`not_signed_in`; damaged credentials retain their verification error. An expired
+trusted lease may silently renew. Public key and current native binding MUST be
+checked before server contact. Never follow redirects carrying signed requests.
+
+Eligible transport failures and 5xx outages may return an otherwise valid,
+unexpired saved lease with `online=false`. They MUST NOT extend its expiry or
+clear a saved refusal. Recheck time after a failed request. Parent cancellation,
+explicit 3xx/4xx and policy refusals never permit offline fallback. Revocation
+discards the lease and usage. Changed terms and invalid leases return an error
+without interactive activation. Successful renewal clears saved refusal state;
+removed modules return `module_denied`, without preserving the old grant.
+
+Scheduling is consumer-owned. Client construction and ordinary command-start
+checks do not start a background task. Optional monitor helpers MUST be started
+explicitly and cleaned up when work finishes. A monitor uses the signed interval
+(or a faster caller choice) and independently enforces the last signed expiry,
+even while HTTP or an observer callback is blocked. It signals cancellation or
+failure; the application decides how to checkpoint or stop its work. It never
+terminates the process automatically. Native bindings may expose only the
+primitive so consumers retain their runtime's scheduling and callback rules.
+
 ## Native binding m1
 
 Use exactly the sources and normalization described in the

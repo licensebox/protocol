@@ -15,6 +15,8 @@ jobs:
   linux:
     name: Linux
     runs-on: ubuntu-24.04
+    env:
+      LICENSEBOX_PROTOCOL_DIR: ${{ github.workspace }}/protocol
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,7 +84,9 @@ jobs:
         run: python3 -m unittest discover -s tests
       - if: inputs.language == 'python'
         working-directory: protocol
-        run: python3 conformance/run.py --adapter python3 ../sdk/tests/adapter.py
+        run: |
+          python3 conformance/run.py --adapter python3 ../sdk/tests/adapter.py
+          python3 conformance/heartbeat.py --adapter python3 ../sdk/tests/adapter.py
       - if: inputs.language == 'javascript'
         uses: actions/setup-node@v4
         with:
@@ -97,7 +101,9 @@ jobs:
         run: npm test
       - if: inputs.language == 'javascript'
         working-directory: protocol
-        run: python3 conformance/run.py --adapter node ../sdk/test/adapter.mjs
+        run: |
+          python3 conformance/run.py --adapter node ../sdk/test/adapter.mjs
+          python3 conformance/heartbeat.py --adapter node ../sdk/test/adapter.mjs
       - if: inputs.language == 'c' || inputs.language == 'cpp'
         run: sudo apt-get update && sudo apt-get install -y libssl-dev libcurl4-openssl-dev libjson-c-dev
       - if: inputs.language == 'c' || inputs.language == 'cpp'
@@ -106,10 +112,14 @@ jobs:
         run: cmake --build sdk/build -j 2
       - if: inputs.language == 'c'
         working-directory: protocol
-        run: python3 conformance/run.py --adapter ../sdk/build/licensebox-adapter
+        run: |
+          python3 conformance/run.py --adapter ../sdk/build/licensebox-adapter
+          python3 conformance/heartbeat.py --adapter ../sdk/build/licensebox-adapter
       - if: inputs.language == 'cpp'
         working-directory: protocol
-        run: python3 conformance/run.py --adapter ../sdk/build/licensebox-cpp-adapter
+        run: |
+          python3 conformance/run.py --adapter ../sdk/build/licensebox-cpp-adapter
+          python3 conformance/heartbeat.py --adapter ../sdk/build/licensebox-cpp-adapter
       - if: inputs.language == 'go'
         uses: actions/setup-go@v5
         with:
@@ -126,17 +136,15 @@ jobs:
           GOWORK=off go build -buildvcs=false -o "$GITHUB_WORKSPACE/go-adapter" .
       - if: inputs.language == 'go'
         working-directory: protocol
-        run: python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+        run: |
+          python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
+          python3 conformance/heartbeat.py --adapter "$GITHUB_WORKSPACE/go-adapter"
       - if: steps.metadata.outputs.native == 'true'
         name: Resolve native dependency
         id: native
         run: |
-          python3 - <<'PY'
-          import os,re
-          tag=open('sdk/native-version.txt').read().strip()
-          assert re.fullmatch(r'v\d+\.\d+\.\d+',tag)
-          with open(os.environ['GITHUB_OUTPUT'],'a') as out: out.write('tag='+tag+'\n')
-          PY
+          ref=$(python3 -B protocol/scripts/dependency_ref.py c sdk/native-version.txt)
+          echo "tag=$ref" >> "$GITHUB_OUTPUT"
       - if: steps.metadata.outputs.native == 'true'
         uses: actions/checkout@v4
         with:
@@ -192,7 +200,9 @@ jobs:
           LICENSEBOX_LIB_DIR: ${{ github.workspace }}/native/lib
           LICENSEBOX_LIBRARY: ${{ github.workspace }}/native/lib/liblicensebox.so
           LD_LIBRARY_PATH: ${{ github.workspace }}/native/lib
-        run: python3 conformance/run.py --adapter bash ../sdk/ci/adapter.sh
+        run: |
+          python3 conformance/run.py --adapter bash ../sdk/ci/adapter.sh
+          python3 conformance/heartbeat.py --adapter bash ../sdk/ci/adapter.sh
       - if: inputs.language == 'octave'
         name: MEX native identifier string regression
         working-directory: protocol

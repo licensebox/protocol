@@ -1,15 +1,17 @@
 {
   "protocol": 2,
-  "revision": 11,
+  "revision": 12,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
       "repository": "licensebox/go",
-      "release": "v0.6.1"
+      "release": "v0.6.1",
+      "candidate_ref": "ce9c4e9fb91d49d60b7b52dce3413f3991ec8f0a"
     },
     "python": {
       "repository": "licensebox/python",
-      "release": "v0.1.0"
+      "release": "v0.1.0",
+      "candidate_ref": "44eb29cfd388f2959b7e64be0b1f3ca0ae4b6035"
     },
     "javascript": {
       "repository": "licensebox/javascript",
@@ -17,7 +19,8 @@
     },
     "c": {
       "repository": "licensebox/c",
-      "release": "v0.3.0"
+      "release": "v0.3.0",
+      "candidate_ref": "c530e36b4656d9a66cb1b01c977a84df1f458fc3"
     },
     "cpp": {
       "repository": "licensebox/cpp",

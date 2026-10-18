@@ -99,6 +99,7 @@ automatic workstation installer. Run the shared suite from the protocol checkout
 
 ```sh
 python3 conformance/run.py --adapter bash ../SDK/ci/adapter.sh
+python3 conformance/heartbeat.py --adapter bash ../SDK/ci/adapter.sh
 ```
 
 Keep compiler versions, package consumers and lifecycle/callback checks in the
@@ -109,3 +110,13 @@ MATLAB and Octave additionally run `conformance/mex_strings.py`; TLS-capable
 native adapters can run `conformance/tls_transport.py` with synthetic roots.
 All fixtures are synthetic. Never use an administrator token, production signing
 key, customer account or private consuming application to make tests pass.
+
+## Coordinated heartbeat candidates
+
+Before publishing a shared-core update, feature contract commits may include
+`candidate_ref` on the Go, C and Python client entries. These are full immutable
+commit SHAs in the already registered public repositories. Candidate workflows
+use them only to validate unpublished coordinated changes; stable release pins
+remain unchanged. Remove all candidate fields and record tested release versions
+before updating the default contract. Never publish a stable SDK from a failing
+candidate run or promote bridge-only validation to full runtime support.
