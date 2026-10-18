@@ -1,6 +1,6 @@
 {
   "protocol": 2,
-  "revision": 10,
+  "revision": 11,
   "reference_go": "v0.6.1",
   "clients": {
     "go": {
@@ -175,11 +175,9 @@
       "native_c": true
     }
   },
-  "planned": [
-    "wolfram"
-  ],
+  "planned": [],
   "validated_profile": "linux-native",
-  "notes": "Browser/WASM requires a separate host identity design; do not substitute a random browser ID for native machine recognition.",
+  "notes": "Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram is a separate runtime-unvalidated source preview.",
   "previews": {
     "wolfram": {
       "repository": "licensebox/wolfram",
