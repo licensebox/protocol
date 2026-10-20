@@ -51,23 +51,44 @@ func main() {
 	if err := json.NewDecoder(os.Stdin).Decode(&r); err != nil {
 		panic(err)
 	}
+	var value any
+	keys, err := decodeKeys(r.Keys)
+	switch {
+	case err != nil:
+	case r.Op == "derive":
+		value, err = machine.Derive(r.Product, r.Source, r.RawID)
+	case r.Op == "native":
+		value, err = machine.Native(r.Product)
+	case r.Op == "verify":
+		value, err = lease.Check(r.Token, r.Product, keys, time.Unix(r.Now, 0))
+	default:
+		value, err = app(r, keys)
+	}
+	answer := map[string]any{"ok": err == nil, "value": value}
+	if err != nil {
+		answer["error"] = errorCode(err)
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(answer); err != nil {
+		panic(err)
+	}
+}
+
+// decodeKeys refuses a trusted key that is not "<alg>:<base64url>" of a
+// known algorithm, as an app would refuse to start with it.
+func decodeKeys(values map[string]string) (lease.Keys, error) {
 	keys := lease.Keys{}
-	for kid, value := range r.Keys {
+	for kid, value := range values {
 		key, err := lease.DecodeKey(value)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		keys[kid] = key
 	}
-	var value any
-	var err error
+	return keys, nil
+}
+
+func app(r request, keys lease.Keys) (value any, err error) {
 	switch r.Op {
-	case "derive":
-		value, err = machine.Derive(r.Product, r.Source, r.RawID)
-	case "native":
-		value, err = machine.Native(r.Product)
-	case "verify":
-		value, err = lease.Check(r.Token, r.Product, keys, time.Unix(r.Now, 0))
 	default:
 		var c *client.Client
 		c, err = client.New(client.Config{Product: r.Product, Keys: keys, Server: r.Server, Dir: r.Directory, Version: "conformance", Out: io.Discard, Now: func() time.Time { return time.Unix(r.Now, 0) }, MachineBinding: func() (machine.Binding, error) { return machine.Binding(r.Binding), nil }})
@@ -122,11 +143,5 @@ func main() {
 			}
 		}
 	}
-	answer := map[string]any{"ok": err == nil, "value": value}
-	if err != nil {
-		answer["error"] = errorCode(err)
-	}
-	if err := json.NewEncoder(os.Stdout).Encode(answer); err != nil {
-		panic(err)
-	}
+	return value, err
 }

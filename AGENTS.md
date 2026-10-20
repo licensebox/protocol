@@ -13,7 +13,9 @@ Before changing a client, read SPEC.md, contract.json and MAINTAINING.md here.
 - Update contract.json's revision and compatibility map. The scheduled sync
   workflows propagate tested contract/dependency pins as PRs to each SDK repo.
   They do not translate arbitrary implementation changes or publish packages.
-- Use pure Ed25519 from maintained crypto libraries. Preserve exact signed bytes.
+- Sign and verify with hybrid Ed25519 + ML-DSA-65 from maintained crypto
+  libraries; both halves must verify. Take the algorithm from the trusted key,
+  never from a token. Preserve exact signed bytes.
   Never substitute random/hostname/network IDs for missing native identity.
 - Keep client code public and server secrets private. Tests use synthetic keys,
   addresses and hosts only. Never copy Edgewise source, internal documents,

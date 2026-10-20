@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: protocol/conformance/go-adapter/go.mod
-      - run: python3 -m pip install 'cryptography>=43'
+      - run: python3 -m pip install 'cryptography>=48'
       - run: python3 -B protocol/scripts/test_dependency_ref.py
       - run: python3 -B protocol/scripts/test_registry.py
       - run: python3 -B protocol/scripts/test_publisher.py
@@ -46,9 +46,10 @@ jobs:
         run: |
           python3 conformance/run.py --adapter "$GITHUB_WORKSPACE/go-adapter"
           python3 conformance/heartbeat.py --adapter "$GITHUB_WORKSPACE/go-adapter"
-      - name: Deterministic public fixtures
+      - name: Public fixtures match their generators
         working-directory: protocol
+        # ML-DSA signing is hedged, so regenerated signatures always differ:
+        # compare everything else, and verify the committed signatures.
         run: |
-          python3 conformance/run.py --write-vectors
-          python3 conformance/heartbeat.py --write-vectors
-          git diff --exit-code -- vectors.json heartbeat-vectors.json
+          python3 conformance/run.py --check-vectors
+          python3 conformance/heartbeat.py --check-vectors

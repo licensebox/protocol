@@ -1,11 +1,12 @@
 {
-  "protocol": 2,
-  "revision": 12,
-  "reference_go": "v0.7.0",
+  "protocol": 3,
+  "revision": 13,
+  "algorithm": "ed25519-mldsa65",
+  "reference_go": "v0.8.0",
   "clients": {
     "go": {
       "repository": "licensebox/go",
-      "release": "v0.7.0"
+      "release": "v0.8.0"
     },
     "python": {
       "repository": "licensebox/python",
@@ -177,7 +178,7 @@
   },
   "planned": [],
   "validated_profile": "linux-native",
-  "notes": "Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
+  "notes": "Protocol 3 signs everything with hybrid Ed25519 + ML-DSA-65 and refuses v2. Only the Go reference implements it so far; every other release listed is protocol 2 and must be ported before it works against the server. Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
   "previews": {
     "wolfram": {
       "repository": "licensebox/wolfram",

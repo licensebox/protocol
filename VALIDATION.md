@@ -1,6 +1,6 @@
 # Initial SDK validation
 
-The first batch targets Linux. Each SDK passes the same 69 behavioral checks,
+The first batch targets Linux. Each SDK passes the same 83 behavioral checks,
 using synthetic local records and public test keys. Runtime tests read the host's
 native identity only to compare stability and product separation; no identifier
 is printed, uploaded or used in a production licence.

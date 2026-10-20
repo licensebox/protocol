@@ -1,25 +1,63 @@
-# Application protocol v2
+# Application protocol v3
 
-API endpoint paths retain `/v1`. The lease and signature domains use v2. All
+API endpoint paths retain `/v1`. The lease and signature domains use v3. All
 requests are JSON over HTTPS. HTTP is permitted only on loopback for development.
 Do not follow redirects with signed bodies. Native transports may accept an explicit
 CA certificate PEM bundle for environments whose TLS library lacks a default
 trust store. This never disables certificate-chain or hostname verification. Public keys are administrator-provided
-32-byte Ed25519 verification keys, encoded as unpadded base64url. Installation
-private keys never leave the host. Product signing keys and admin credentials
-never belong in an application client.
+and carry their algorithm (below). Installation private keys never leave the host.
+Product signing keys and admin credentials never belong in an application client.
+
+Protocol v3 is a clean break from v2: v2 keys, leases, installation keys and
+signatures are refused. There is no compatibility path.
+
+## Keys and signatures
+
+Every signature, by a product key or an installation key, uses one algorithm,
+`ed25519-mldsa65`: Ed25519 (RFC 8032) and ML-DSA-65 (FIPS 204) over the **same
+message bytes**. A signature is valid only if **both** halves verify, so it
+stays unforgeable if either algorithm or one implementation of it is broken.
+Parts are fixed-length concatenations, Ed25519 first:
+
+| | Ed25519 | ML-DSA-65 | `ed25519-mldsa65` |
+| --- | --- | --- | --- |
+| public key | 32 B | 1952 B | `ed25519_pk ‖ mldsa_pk` = 1984 B |
+| signature | 64 B | 3309 B | `ed25519_sig ‖ mldsa_sig` = 3373 B |
+| private key | 32 B seed | 32 B seed (ξ) | `ed25519_seed ‖ mldsa_seed` = 64 B |
+
+- Ed25519 is pure Ed25519, without prehashing. ML-DSA-65 is pure ML-DSA with an
+  **empty context**, signed hedged (randomized, the default); verifiers accept
+  any valid signature. Keep only seeds; expand ML-DSA keys from the seed.
+- A key is written `<alg>:<unpadded base64url>`, for example
+  `ed25519-mldsa65:AAAA…` (2,662 characters for a public key). A missing,
+  unknown or differently cased algorithm, or a wrong length, is malformed:
+  refuse it, never fall back to treating the bytes as an Ed25519 key.
+- **The verifier takes the algorithm from the trusted key, never from a token
+  or request.** Leases carry no algorithm field. A signature of the wrong length
+  for the key's algorithm is a bad signature.
+- Every signed message names the algorithm, so a signature is never checked
+  under a different algorithm than it was made with.
+- A future algorithm is a new `<alg>` value implemented in each SDK; the wire
+  format does not change.
+
+The construction is deliberately the plain one above, not the
+[IETF composite signature](https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/)
+message representative: licensebox uses no X.509 tooling, the domain prefixes
+already separate every message, and naming the algorithm in each message binds
+both halves to it.
 
 ## Exact signature bytes
 
 Times below are UTC RFC 3339, truncated to seconds, for example
 `2026-10-18T12:00:00Z`. The server permits five minutes of skew. Encoding is UTF-8;
-`\n` denotes one LF byte. Hash output is lowercase hex. Sign with **pure Ed25519**,
-without prehashing the complete message. Signatures use unpadded base64url.
+`\n` denotes one LF byte. Hash output is lowercase hex. `alg` is the signing key's
+algorithm, `ed25519-mldsa65`. Signatures use unpadded base64url.
 
 ```text
-device = "licensebox device v2\n" + product + "\n" + binding + "\n" + time
-poll   = "licensebox token v2\n" + device_code + "\n" + binding + "\n" + time
-call   = "licensebox " + kind + " v2\n" + lease + "\n" + binding + "\n" + time + "\n" + hex(SHA256(payload))
+lease  = "licensebox lease v3\n"  + alg + "\n" + original payload bytes
+device = "licensebox device v3\n" + alg + "\n" + product + "\n" + binding + "\n" + time
+poll   = "licensebox token v3\n"  + alg + "\n" + device_code + "\n" + binding + "\n" + time
+call   = "licensebox " + kind + " v3\n" + alg + "\n" + lease + "\n" + binding + "\n" + time + "\n" + hex(SHA256(payload))
 ```
 
 `payload` is a JSON **string** in the signed call envelope. Hash its exact UTF-8
@@ -28,10 +66,10 @@ the string. No canonical JSON reserialization is performed by the verifier.
 
 ## Activation
 
-Generate an Ed25519 installation key, retained across process restarts. Derive the
+Generate an `ed25519-mldsa65` installation key, retained across process restarts. Derive the
 native binding before contacting the server. Missing identity refuses activation.
 
-`POST /v1/device` has `product`, `machine` (installation public key), `binding`,
+`POST /v1/device` has `product`, `machine` (installation public key, `<alg>:<base64url>`), `binding`,
 `os`, `arch`, `version`, `time`, `signature`. The result has `device_code`,
 `user_code`, `verification_uri`, `verification_uri_complete`, `expires_in`,
 `interval`, optionally `interval_ms`. Display the URI and user code or call the
@@ -66,9 +104,10 @@ Request results include `id`, `modules`, `note`, `status` and, when answered,
 ## Lease verification
 
 A token is `base64url(payload) + "." + base64url(signature)`. Verify the signature
-over `"licensebox lease v2\n"` followed by the **original decoded payload bytes**.
-Fields are `v=2`, `kid`, `product`, `user`, `email`, `machine`, `binding`, `modules`,
-`issued`, `expires`, `terms`. Select only a trusted key by `kid`; match the product,
+with the trusted key over the lease message above: `"licensebox lease v3\n"`, the
+key's algorithm and `"\n"`, then the **original decoded payload bytes**.
+Fields are `v=3`, `kid`, `product`, `user`, `email`, `machine`, `binding`, `modules`,
+`issued`, `expires`, `terms`. Refuse any `v` other than 3. Select only a trusted key by `kid`; match the product,
 current installation public key and current native binding. Parsing JSON alone
 never authorizes an operation. Do not grant a module absent from `modules`.
 
@@ -156,7 +195,7 @@ binding = "m1:" + source + ":" + lowercase_hex(digest)
 ```
 
 Sources are `linux-dmi`, `linux-device-tree`, `linux-machine-id`, `windows-smbios`,
-`macos-platform`. Binding namespace m1 is distinct from signature format v2.
+`macos-platform`. Binding namespace m1 is distinct from signature format v3.
 The derivation key is public namespace material, not hardware attestation. Full
 VM clones, spoofed native IDs or modified host software remain limitations.
 
@@ -170,7 +209,8 @@ country/city/radius restrictions based on trusted ingress metadata.
 
 Default Linux directory: `$XDG_CONFIG_HOME/licensebox/<product>` or
 `$HOME/.config/licensebox/<product>`. The product directory is private (0700),
-files 0600, writes atomic. `install.key` is a base64url 32-byte seed; `lease` holds
+files 0600, writes atomic. `install.key` is `ed25519-mldsa65:` and the unpadded
+base64url 64-byte seed pair. A v2 key file (a bare 32-byte seed) is malformed. `lease` holds
 the signed token; `seen` holds the latest observed UTC time. Retain this latest
 time across restarts so rolling the wall clock back cannot revive an already
 observed expired lease. `policy-denial` is JSON with `code` and `detail`.
@@ -183,9 +223,18 @@ Collect usage only after `usage=true`. `usage.json` queues cumulative counts by
 its cumulative values have not changed. Bound to 1,000 queued counts and send at
 most 100 per renewal. Never send filenames, arguments, file data or geometry.
 
+## Sizes
+
+A lease is about 8 KB: its payload (~3.2 KB) carries the 2.7 KB installation
+public key, and the signature is 4.5 KB in base64url. Signed calls carry the
+lease, so request bodies are about 10 KB. Keep a product public key in a file or
+constant rather than inline in configuration.
+
 ## Crypto implementation references
 
-- [Python cryptography: Ed25519](https://cryptography.io/en/46.0.4/hazmat/primitives/asymmetric/ed25519/)
-- [Node.js crypto](https://nodejs.org/download/release/v22.18.0/docs/api/crypto.html)
-- [OpenSSL Ed25519](https://docs.openssl.org/3.4/man7/EVP_SIGNATURE-ED25519/)
+- [FIPS 204, ML-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
+- [Go crypto/mldsa](https://pkg.go.dev/crypto/mldsa) (Go 1.26+) and crypto/ed25519
+- [Python cryptography](https://cryptography.io/en/latest/hazmat/primitives/asymmetric/mldsa/) 48 or later: `MLDSA65PrivateKey.from_seed_bytes`
+- [Node.js crypto](https://nodejs.org/api/crypto.html): `ml-dsa-65` needs a Node build with OpenSSL 3.5 or later
+- [OpenSSL ML-DSA](https://docs.openssl.org/3.5/man7/EVP_SIGNATURE-ML-DSA/) 3.5 or later, and [OpenSSL Ed25519](https://docs.openssl.org/3.5/man7/EVP_SIGNATURE-ED25519/)
 - [libcurl options](https://curl.se/libcurl/c/curl_easy_setopt.html)

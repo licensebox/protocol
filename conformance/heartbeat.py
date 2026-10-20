@@ -15,7 +15,7 @@ POLICY = {"interval_seconds": 30, "grace_seconds": 90}
 
 def signed(value):
     payload = json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode()
-    return wire.enc(payload) + "." + wire.enc(wire.SIGNING.sign(b"licensebox lease v2\n" + payload))
+    return wire.enc(payload) + "." + wire.enc(wire.SIGNING.sign(wire.lease_message(payload)))
 
 
 def value(machine, host, now=wire.START, *, heartbeat=POLICY, modules=None, terms=1):
@@ -62,10 +62,9 @@ class Handler(wire.Handler):
 
 
 def public_vectors():
-    key = wire.Ed25519PrivateKey.from_private_bytes(bytes(range(32, 64)))
-    machine = wire.enc(key.public_key().public_bytes_raw())
+    machine = wire.Key(bytes(range(64, 128))).public()
     valid = value(machine, wire.HOST_A)
-    return {"protocol": 2, "now": wire.START, "product": "demo",
+    return {"protocol": 3, "now": wire.START, "product": "demo",
             "keys": {"test-key": wire.PUBLIC}, "cases": [
                 {"name": "enabled", "token": signed(valid), "heartbeat": POLICY},
                 {"name": "legacy-disabled", "token": signed(value(machine, wire.HOST_A, heartbeat=None))},
@@ -77,10 +76,16 @@ def public_vectors():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--write-vectors", action="store_true")
+    parser.add_argument("--check-vectors", action="store_true")
     parser.add_argument("--adapter", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    fixture = Path(__file__).resolve().parents[1]/"heartbeat-vectors.json"
     if args.write_vectors:
-        (Path(__file__).resolve().parents[1]/"heartbeat-vectors.json").write_text(json.dumps(public_vectors(), indent=2)+"\n")
+        fixture.write_text(json.dumps(public_vectors(), indent=2)+"\n")
+        return
+    if args.check_vectors:
+        wire.check_fixture(fixture, public_vectors(),
+                           lambda v: (wire.lease_signature(v["keys"]["test-key"], case["token"]) for case in v["cases"]))
         return
     if not args.adapter:
         parser.error("--adapter is required unless writing vectors")
@@ -99,9 +104,8 @@ def main():
         total += 1
         return answer.get("value")
 
-    seed = bytes(range(32, 64))
-    key = wire.Ed25519PrivateKey.from_private_bytes(seed)
-    machine = wire.enc(key.public_key().public_bytes_raw())
+    key = wire.Key(bytes(range(64, 128)))
+    machine = key.public()
     verify = {"op": "verify", "product": "demo", "keys": {"test-key": wire.PUBLIC}, "now": wire.START}
     valid = value(machine, wire.HOST_A)
     checked = request(dict(verify, token=public_vectors()["cases"][0]["token"]))
@@ -148,7 +152,7 @@ def main():
                 state.redirect_leaks = 0
                 directory = root/name
                 directory.mkdir(mode=0o700)
-                (directory/"install.key").write_text(wire.enc(seed)+"\n")
+                (directory/"install.key").write_text(key.private()+"\n")
                 if lease_value is not None:
                     (directory/"lease").write_text(signed(lease_value)+"\n")
                 return dict(base, directory=str(directory))

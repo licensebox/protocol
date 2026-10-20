@@ -22,7 +22,7 @@ def main():
     if actual!=args.ref:
         parser.error("contract checkout does not match requested commit")
     contract=json.loads((args.contract/"contract.json").read_text())
-    if contract["protocol"]!=2 or not isinstance(contract["revision"],int) or contract["revision"]<1:
+    if contract["protocol"]!=3 or not isinstance(contract["revision"],int) or contract["revision"]<1:
         parser.error("unsupported contract; implement and review the protocol transition first")
     client=registered(contract,args.language,allow_preview=args.preview)
     if args.preview and (args.language!="wolfram" or args.language not in contract.get("previews",{})):

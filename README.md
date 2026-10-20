@@ -20,26 +20,28 @@ to a browser-generated installation ID.
 
 ## Run the contract
 
-Python 3.10+ and `cryptography>=43` run the mock server. An adapter is a small
+Python 3.10+ and `cryptography>=48` (ML-DSA) run the mock server. An adapter is a small
 program reading one JSON request on stdin and writing one JSON result on stdout.
 The SDK directories contain their adapters. For example:
 
 ```sh
-python3 -m pip install 'cryptography>=43'
+python3 -m pip install 'cryptography>=48'
 PYTHONPATH=../python/src python3 conformance/run.py --adapter python3 ../python/tests/adapter.py
 python3 conformance/run.py --adapter node ../javascript/test/adapter.mjs
 python3 conformance/run.py --adapter ../c/build/licensebox-adapter
 python3 conformance/run.py --adapter ../cpp/build/licensebox-cpp-adapter
 ```
 
-The suite tests signed activation and token polling, exact UTF-8 payload proofs,
+The suite tests hybrid Ed25519 + ML-DSA-65 signatures (including refused
+Ed25519-only, truncated, half-corrupted and wrong-algorithm keys and signatures),
+signed activation and token polling, exact UTF-8 payload proofs,
 lease signatures, product and key selection, native binding format, native Linux
 identity stability, process-level renewal, offline expiry, clock rollback, long
 idle periods, changed terms, module access, requests, access links, cumulative
 usage retry IDs, persistent policy refusals, credential copies, explicit seat
 transfer, reinstall, revocation and logout.
 
-The current suite performs 69 checks per SDK, including refusal-state corruption.
+The current suite performs 83 checks per SDK, including refusal-state corruption.
 C and C++ run with address and undefined-behavior sanitizers in Linux CI. Go runs
 with its race detector; Python and Node also validate real native identity without
 printing identifiers. See [VALIDATION.md](VALIDATION.md) for install checks.

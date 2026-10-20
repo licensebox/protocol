@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python3 -m pip install 'cryptography>=43'
+      - run: python3 -m pip install 'cryptography>=48'
       - name: Prepare tested contract metadata
         id: metadata
         env:
