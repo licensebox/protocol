@@ -235,6 +235,6 @@ constant rather than inline in configuration.
 - [FIPS 204, ML-DSA](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf)
 - [Go crypto/mldsa](https://pkg.go.dev/crypto/mldsa) (Go 1.26+) and crypto/ed25519
 - [Python cryptography](https://cryptography.io/en/latest/hazmat/primitives/asymmetric/mldsa/) 48 or later: `MLDSA65PrivateKey.from_seed_bytes`
-- [Node.js crypto](https://nodejs.org/api/crypto.html): `ml-dsa-65` needs a Node build with OpenSSL 3.5 or later
+- [Node.js crypto](https://nodejs.org/api/crypto.html) 24.6 or later: `ml-dsa-65` keys from a seed-only PKCS#8
 - [OpenSSL ML-DSA](https://docs.openssl.org/3.5/man7/EVP_SIGNATURE-ML-DSA/) 3.5 or later, and [OpenSSL Ed25519](https://docs.openssl.org/3.5/man7/EVP_SIGNATURE-ED25519/)
 - [libcurl options](https://curl.se/libcurl/c/curl_easy_setopt.html)

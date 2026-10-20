@@ -14,7 +14,7 @@ permissions:
 jobs:
   linux:
     name: Linux
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       LICENSEBOX_PROTOCOL_DIR: ${{ github.workspace }}/protocol
     steps:
@@ -90,7 +90,7 @@ jobs:
       - if: inputs.language == 'javascript'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - if: inputs.language == 'javascript'
         working-directory: sdk
         run: npm ci --ignore-scripts --no-audit --no-fund
