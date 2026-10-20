@@ -1,24 +1,24 @@
 {
   "protocol": 3,
-  "revision": 13,
+  "revision": 14,
   "algorithm": "ed25519-mldsa65",
-  "reference_go": "v0.8.0",
+  "reference_go": "v0.8.1",
   "clients": {
     "go": {
       "repository": "licensebox/go",
-      "release": "v0.8.0"
+      "release": "v0.8.1"
     },
     "python": {
       "repository": "licensebox/python",
-      "release": "v0.2.0"
+      "release": "v0.3.0"
     },
     "javascript": {
       "repository": "licensebox/javascript",
-      "release": "v0.2.0"
+      "release": "v0.3.0"
     },
     "c": {
       "repository": "licensebox/c",
-      "release": "v0.4.0"
+      "release": "v0.5.0"
     },
     "cpp": {
       "repository": "licensebox/cpp",
@@ -178,7 +178,7 @@
   },
   "planned": [],
   "validated_profile": "linux-native",
-  "notes": "Protocol 3 signs everything with hybrid Ed25519 + ML-DSA-65 and refuses v2. Only the Go reference implements it so far; every other release listed is protocol 2 and must be ported before it works against the server. Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
+  "notes": "Protocol 3 signs everything with hybrid Ed25519 + ML-DSA-65 and refuses v2. Go, Python, JavaScript and the C core (OpenSSL 3.5+) implement it; C-core bindings follow the C release pinned here. Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
   "previews": {
     "wolfram": {
       "repository": "licensebox/wolfram",
