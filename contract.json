@@ -1,6 +1,6 @@
 {
   "protocol": 3,
-  "revision": 14,
+  "revision": 15,
   "algorithm": "ed25519-mldsa65",
   "reference_go": "v0.8.1",
   "clients": {
@@ -22,16 +22,16 @@
     },
     "cpp": {
       "repository": "licensebox/cpp",
-      "release": "v0.2.0"
+      "release": "v0.3.0"
     },
     "rust": {
       "repository": "licensebox/rust",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "java": {
       "repository": "licensebox/java",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true,
       "languages": [
         "java",
@@ -42,12 +42,12 @@
     },
     "julia": {
       "repository": "licensebox/julia",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "dotnet": {
       "repository": "licensebox/dotnet",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true,
       "languages": [
         "csharp",
@@ -57,113 +57,113 @@
     },
     "fortran": {
       "repository": "licensebox/fortran",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "pascal": {
       "repository": "licensebox/pascal",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "zig": {
       "repository": "licensebox/zig",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "nim": {
       "repository": "licensebox/nim",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "d": {
       "repository": "licensebox/d",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "cobol": {
       "repository": "licensebox/cobol",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "cli": {
       "repository": "licensebox/cli",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "wasm": {
       "repository": "licensebox/wasm",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "custom_ci": true,
       "wasmtime_version": "39.0.0"
     },
     "r": {
       "repository": "licensebox/r",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "haskell": {
       "repository": "licensebox/haskell",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "ocaml": {
       "repository": "licensebox/ocaml",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "octave": {
       "repository": "licensebox/octave",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "objc": {
       "repository": "licensebox/objc",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "swift": {
       "repository": "licensebox/swift",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "ruby": {
       "repository": "licensebox/ruby",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "php": {
       "repository": "licensebox/php",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "dart": {
       "repository": "licensebox/dart",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "lua": {
       "repository": "licensebox/lua",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "perl": {
       "repository": "licensebox/perl",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "tcl": {
       "repository": "licensebox/tcl",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "powershell": {
       "repository": "licensebox/powershell",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     },
     "beam": {
       "repository": "licensebox/beam",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true,
       "languages": [
         "erlang",
@@ -172,13 +172,13 @@
     },
     "matlab": {
       "repository": "licensebox/matlab",
-      "release": "v0.2.0",
+      "release": "v0.3.0",
       "native_c": true
     }
   },
   "planned": [],
   "validated_profile": "linux-native",
-  "notes": "Protocol 3 signs everything with hybrid Ed25519 + ML-DSA-65 and refuses v2. Go, Python, JavaScript and the C core (OpenSSL 3.5+) implement it; C-core bindings follow the C release pinned here. Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
+  "notes": "Protocol 3 signs everything with hybrid Ed25519 + ML-DSA-65 and refuses v2. Every client listed implements it: Go, Python, JavaScript, the C core (OpenSSL 3.5+) and its bindings. Linux is the validated runtime. WebAssembly/WASI uses a native Python/Wasmtime host; standalone browser identity is unsupported. Wolfram 15/Linux remains a source preview: all 69 shared cases and TLS checks passed locally, while hosted CI checks only the Java/native bridge. A stable release remains gated on repeatable licensed runtime CI; see https://github.com/licensebox/wolfram/blob/main/VALIDATION.md.",
   "previews": {
     "wolfram": {
       "repository": "licensebox/wolfram",
