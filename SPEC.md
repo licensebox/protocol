@@ -57,6 +57,7 @@ algorithm, `ed25519-mldsa65`. Signatures use unpadded base64url.
 lease  = "licensebox lease v3\n"  + alg + "\n" + original payload bytes
 device = "licensebox device v3\n" + alg + "\n" + product + "\n" + binding + "\n" + time
 poll   = "licensebox token v3\n"  + alg + "\n" + device_code + "\n" + binding + "\n" + time
+enrol  = "licensebox enrol v3\n"  + alg + "\n" + product + "\n" + hex(SHA256(enrolment_token)) + "\n" + binding + "\n" + time
 call   = "licensebox " + kind + " v3\n" + alg + "\n" + lease + "\n" + binding + "\n" + time + "\n" + hex(SHA256(payload))
 ```
 
@@ -85,6 +86,26 @@ Success returns `{ "lease": "...", "usage": true|false }`. Verify the complete
 lease and both identities before saving. Completed activation may transfer a
 seat; ordinary renewal must never activate again merely to steal a seat back.
 
+## Service account enrolment
+
+A service account is a machine, such as a server or build runner, licensed in
+its own name. An administrator issues it a one-time enrolment token. SDKs accept
+the token in client configuration and, when that is empty, from the
+`LICENSEBOX_ENROL_TOKEN` environment variable; they also expose an explicit
+`Enrol(token)` operation (C JSON operation `enrol` with `{"token":"..."}`).
+When no lease is kept and a token is configured, the first protected call or an
+explicit sign-in enrols instead of starting device activation. Enrolment never
+displays a code, opens a browser or calls the sign-in callback.
+
+`POST /v1/enrol` has `product`, `token`, `machine`, `binding`, `os`, `arch`,
+`version`, `time`, `signature` (the `enrol` message above, with the installation
+key). The signed message carries the token's SHA-256, never the token itself.
+Success returns `{ "lease": "...", "usage": true|false }`, verified and saved as
+after activation. `invalid_token` means the token is unknown, already used or
+expired: return it as `invalid_token`, without falling back to device
+activation. Copied credentials and changed bindings follow activation's rules.
+The server revokes the account's earlier machine when a new token is used.
+
 ## Signed operations
 
 The envelope contains `lease`, `binding`, `time`, `payload`, `signature`, `version`.
@@ -97,6 +118,8 @@ The kind matches the final endpoint component:
 | `request` | `{"modules":["export"],"note":"..."}` | request object |
 | `requests` | `{}` | user's requests |
 | `access-link` | `{}` | `{ "url": "..." }`, a short-lived private access link |
+| `checkout` | `{"module":"solver"}` | fresh lease and usage flag, the module in `checkouts` |
+| `checkin` | `{"modules":["solver"]}` (`[]` for all) | fresh lease and usage flag |
 
 Request results include `id`, `modules`, `note`, `status` and, when answered,
 `granted`, `until`, `answer`, `answered`. Treat access links as credentials.
@@ -107,9 +130,11 @@ A token is `base64url(payload) + "." + base64url(signature)`. Verify the signatu
 with the trusted key over the lease message above: `"licensebox lease v3\n"`, the
 key's algorithm and `"\n"`, then the **original decoded payload bytes**.
 Fields are `v=3`, `kid`, `product`, `user`, `email`, `machine`, `binding`, `modules`,
-`issued`, `expires`, `terms`. Refuse any `v` other than 3. Select only a trusted key by `kid`; match the product,
+`issued`, `expires`, `terms`, and the optional string arrays `elsewhere`,
+`floating` and `checkouts` (missing means empty). Refuse any `v` other than 3. Select only a trusted key by `kid`; match the product,
 current installation public key and current native binding. Parsing JSON alone
-never authorizes an operation. Do not grant a module absent from `modules`.
+never authorizes an operation. A module is authorized only if it is in `modules`
+or in `checkouts`. A service account's lease may have an empty `email`.
 
 The first protected call in every new process silently attempts renewal with a
 three-second bound. A successfully renewed lease may be reused within that
@@ -153,7 +178,7 @@ renewed lease, replace cached authorization before checking the requested
 module, and preserve usage acknowledgement, identity and refusal rules.
 
 Heartbeat MUST NOT start interactive sign-in, create or rotate an installation
-key, or transfer a seat. A missing saved lease or existing key returns
+key, or transfer a seat; it may take a lapsed floating copy again (below). A missing saved lease or existing key returns
 `not_signed_in`; damaged credentials retain their verification error. An expired
 trusted lease may silently renew. Public key and current native binding MUST be
 checked before server contact. Never follow redirects carrying signed requests.
@@ -175,6 +200,31 @@ even while HTTP or an observer callback is blocked. It signals cancellation or
 failure; the application decides how to checkpoint or stop its work. It never
 terminates the process automatically. Native bindings may expose only the
 primitive so consumers retain their runtime's scheduling and callback rules.
+
+## Module seats, floating copies
+
+A product may count a module's seats apart from the product's. The server then
+leaves the module out of `modules` on a machine that does not hold one of its
+seats and names it in `elsewhere`. Requiring it returns `module_denied`; SDKs
+should say that its seat is on another machine and that an explicit sign-in
+there moves it back. Ordinary renewal never moves it.
+
+A customer may hold a pool of floating copies of a module, named in `floating`.
+A copy is held per installation, not per process, and lives only as long as the
+lease: heartbeats renew it, and the server frees it once its lease expires.
+Floating copies therefore require connectivity. When a required module is not
+authorized but is in `floating`, `Require` MUST make the signed `checkout` call
+and return the resulting lease, or `no_free_copy` (HTTP 409) when every copy is
+in use; `not_floating` and a lease without the module return `module_denied`.
+SDKs expose explicit `Checkout(module)` and `Checkin(modules...)` operations
+(C JSON `checkout` with `{"module"}`, `checkin` with `{"module"}` or
+`{"modules":[...]}`). Both save the returned lease as renewal does. Applications
+call `Checkin` when the module's work ends.
+
+A heartbeat for a module whose copy was in the saved lease's `checkouts` but is
+absent from the renewed lease (it lapsed, or an administrator freed it) MUST
+make one `checkout` call: success continues with that lease, `no_free_copy`
+stops the work. Taking a free floating copy is not a seat transfer.
 
 ## Native binding m1
 

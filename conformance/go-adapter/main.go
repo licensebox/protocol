@@ -17,6 +17,7 @@ import (
 type request struct {
 	Op, Product, Source, Token, Server, Directory, Binding, Module string
 	RawID                                                          string `json:"raw_id"`
+	EnrolToken                                                     string `json:"enrol_token"`
 	Keys                                                           map[string]string
 	Now                                                            int64
 }
@@ -37,6 +38,7 @@ func errorCode(err error) string {
 		{machine.ErrUnavailable, "identity_unavailable"}, {client.ErrMachineChanged, "machine_changed"},
 		{client.ErrSeatTransferred, "seat_transferred"}, {client.ErrLocationDenied, "location_denied"},
 		{client.ErrRevoked, "revoked"}, {client.ErrDenied, "denied"}, {client.ErrSignInExpired, "sign_in_expired"},
+		{client.ErrNoFreeCopy, "no_free_copy"}, {client.ErrEnrolment, "invalid_token"},
 		{client.ErrNotSignedIn, "not_signed_in"}, {client.ErrOffline, "offline"}, {lease.ErrMalformed, "malformed"}, {lease.ErrVersion, "version"},
 		{lease.ErrUnknownKey, "unknown_key"}, {lease.ErrBadSignature, "bad_signature"}, {lease.ErrExpired, "expired"},
 	} {
@@ -91,7 +93,7 @@ func app(r request, keys lease.Keys) (value any, err error) {
 	switch r.Op {
 	default:
 		var c *client.Client
-		c, err = client.New(client.Config{Product: r.Product, Keys: keys, Server: r.Server, Dir: r.Directory, Version: "conformance", Out: io.Discard, Now: func() time.Time { return time.Unix(r.Now, 0) }, MachineBinding: func() (machine.Binding, error) { return machine.Binding(r.Binding), nil }})
+		c, err = client.New(client.Config{Product: r.Product, Keys: keys, Server: r.Server, Dir: r.Directory, Version: "conformance", Out: io.Discard, Now: func() time.Time { return time.Unix(r.Now, 0) }, Token: r.EnrolToken, MachineBinding: func() (machine.Binding, error) { return machine.Binding(r.Binding), nil }})
 		if err == nil {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
@@ -121,6 +123,12 @@ func app(r request, keys lease.Keys) (value any, err error) {
 				if err == nil && r.Op == "heartbeat-repeat" {
 					value, err = c.Heartbeat(ctx, r.Module)
 				}
+			case "enrol":
+				value, err = c.Enrol(ctx, r.Token)
+			case "checkout":
+				value, err = c.Checkout(ctx, r.Module)
+			case "checkin":
+				err = c.Checkin(ctx, r.Module)
 			case "status":
 				value, err = c.Status()
 			case "sign_in":

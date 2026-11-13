@@ -136,8 +136,10 @@ def main():
     server.state = state
     base = {"product": "demo", "keys": {"test-key": wire.PUBLIC}, "binding": wire.HOST_A,
             "now": wire.START, "server": f"http://127.0.0.1:{server.server_port}", "module": "core"}
-    def issue(machine_, host, now, *, product="demo", terms=1):
-        return signed(value(machine_, host, now, heartbeat=state.heartbeat, modules=state.modules, terms=terms))
+    def issue(machine_, host, now, *, product="demo", terms=1, extra=None):
+        lease = value(machine_, host, now, heartbeat=state.heartbeat, modules=state.modules, terms=terms)
+        lease.update({k: v for k, v in (extra or {}).items() if v})
+        return signed(lease)
     wire.token = issue
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()

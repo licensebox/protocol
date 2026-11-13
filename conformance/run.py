@@ -91,18 +91,21 @@ def lease_message(payload, alg=ALG, domain="v3"):
 
 HOST_A = binding("12345678123456789abc1234567890ab")
 HOST_B = binding("22345678123456789abc1234567890ab")
+HOST_C = binding("32345678123456789abc1234567890ab")
+HOST_D = binding("42345678123456789abc1234567890ab")
 SIGNING = Key(bytes(range(64)))
 PUBLIC = SIGNING.public()
 
 
-def lease_payload(machine, host, now, *, product="demo", terms=1, version=3):
+def lease_payload(machine, host, now, *, product="demo", terms=1, version=3, extra=None):
     value = {"v": version, "kid": "test-key", "product": product, "user": "synthetic-user", "email": "sdk@example.invalid",
              "machine": machine, "binding": host, "modules": ["core"], "issued": stamp(now), "expires": stamp(now+86400), "terms": terms}
+    value.update({k: v for k, v in (extra or {}).items() if v})
     return json.dumps(value, separators=(",", ":"), ensure_ascii=False).encode()
 
 
-def token(machine, host, now, *, product="demo", terms=1):
-    payload = lease_payload(machine, host, now, product=product, terms=terms)
+def token(machine, host, now, *, product="demo", terms=1, extra=None):
+    payload = lease_payload(machine, host, now, product=product, terms=terms, extra=extra)
     return enc(payload) + "." + enc(SIGNING.sign(lease_message(payload)))
 
 
@@ -213,6 +216,12 @@ class State:
         self.devices, self.machines, self.seats, self.revoked = {}, {}, [], set()
         self.device_count, self.renew_count, self.calls = 0, 0, 0
         self.requests, self.counts = [], {}
+        # Floating copies, seats elsewhere and enrolment (protocol revision 16).
+        self.floating, self.pool, self.checkouts, self.elsewhere = [], 0, {}, []
+        self.enrol_tokens, self.enrol_count = set(), 0
+
+    def lease_extra(self, machine):
+        return {"floating": self.floating, "checkouts": sorted(self.checkouts.get(machine, ())), "elsewhere": self.elsewhere}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -274,7 +283,21 @@ class Handler(BaseHTTPRequestHandler):
                 state.seats.append((machine, host))
                 if state.limit:
                     state.seats = state.seats[-state.limit:]
-                self.answer(200, {"lease": token(machine, host, state.now, terms=state.terms), "usage": True})
+                self.answer(200, {"lease": token(machine, host, state.now, terms=state.terms, extra=state.lease_extra(machine)), "usage": True})
+                return
+            if self.path == "/v1/enrol":
+                machine = request["machine"]
+                secret = hashlib.sha256(request["token"].encode()).hexdigest()
+                verify(machine, dec(request["signature"]), f"licensebox enrol v3\n{ALG}\n{request['product']}\n{secret}\n{host}\n{at}".encode())
+                if request["token"] not in state.enrol_tokens:
+                    self.error("invalid_token")
+                    return
+                state.enrol_tokens.discard(request["token"])
+                state.enrol_count += 1
+                state.machines[machine] = host
+                state.seats = [(key, b) for key, b in state.seats if b != host]
+                state.seats.append((machine, host))
+                self.answer(200, {"lease": token(machine, host, state.now, terms=state.terms, extra=state.lease_extra(machine)), "usage": False})
                 return
             kind = self.path.removeprefix("/v1/")
             lease_token, payload = request["lease"], request["payload"]
@@ -306,10 +329,26 @@ class Handler(BaseHTTPRequestHandler):
                 if state.mode == "lost_ack":
                     self.error("unavailable", 503)
                     return
-                result = token(machine, host, state.now, terms=state.terms)
+                result = token(machine, host, state.now, terms=state.terms, extra=state.lease_extra(machine))
                 if state.mode == "bad_lease":
                     result = result[:-3] + "AAA"
                 self.answer(200, {"lease": result, "usage": True})
+            elif kind == "checkout":
+                module = body["module"]
+                if module not in state.floating:
+                    self.error("not_floating")
+                    return
+                others = sum(module in held for key, held in state.checkouts.items() if key != machine)
+                if others >= state.pool:
+                    self.error("no_free_copy", 409)
+                    return
+                state.checkouts.setdefault(machine, set()).add(module)
+                self.answer(200, {"lease": token(machine, host, state.now, terms=state.terms, extra=state.lease_extra(machine)), "usage": True})
+            elif kind == "checkin":
+                assert isinstance(body["modules"], list)
+                held = state.checkouts.get(machine, set())
+                held.difference_update(body["modules"] or set(held))
+                self.answer(200, {"lease": token(machine, host, state.now, terms=state.terms, extra=state.lease_extra(machine)), "usage": True})
             elif kind == "modules":
                 self.answer(200, [{"name": "core", "free": True, "have": True}, {"name": "export", "description": "Export files", "have": False}])
             elif kind == "request":
@@ -490,6 +529,48 @@ def main():
             app("logout", "copied", binding=HOST_B)
             assert not (directory/"copied"/"lease").exists() and (directory/"copied"/"install.key").exists(), "logout removed identity or kept a lease"
             print("PASS: credential-copy denial, explicit seat transfer, reinstall, native revocation and logout", flush=True)
+
+            # Service accounts enrol with a one-time token, without a person.
+            state.limit, state.revoked = 0, set()
+            devices_before_enrol = state.device_count
+            state.enrol_tokens = {"synthetic-enrol-1", "synthetic-enrol-2"}
+            enrolled = app("enrol", "service", binding=HOST_C, token="synthetic-enrol-1")
+            assert enrolled["modules"] == ["core"] and state.device_count == devices_before_enrol, "enrolment started device activation"
+            app("require", "service", binding=HOST_C)
+            denied("enrol", "invalid_token", "service-copy", binding=HOST_D, token="synthetic-enrol-1")
+            app("require", "service-config", binding=HOST_D, enrol_token="synthetic-enrol-2")
+            assert state.enrol_count == 2 and state.device_count == devices_before_enrol, "a configured token did not enrol on first use"
+            denied("require", "invalid_token", "service-spent", binding=HOST_A, enrol_token="synthetic-enrol-2")
+            print("PASS: one-time enrolment, explicit and configured, without device activation", flush=True)
+
+            # Floating copies: checked out by require, refused when the pool is
+            # used, returned by checkin, kept by heartbeats.
+            state.floating, state.pool = ["solver"], 1
+            held = app("require", "service", binding=HOST_C, module="solver")
+            assert held["checkouts"] == ["solver"] and held["floating"] == ["solver"], "require did not check out a floating copy"
+            denied("require", "no_free_copy", "service-config", binding=HOST_D, module="solver")
+            denied("checkout", "module_denied", "service-config", binding=HOST_D, module="export")
+            app("checkin", "service", binding=HOST_C, module="solver")
+            assert not any(state.checkouts.values()), "checkin did not return the copy"
+            app("checkout", "service-config", binding=HOST_D, module="solver")
+            beat = app("heartbeat", "service-config", binding=HOST_D, module="solver")
+            assert beat["online"] and beat["lease"]["checkouts"] == ["solver"], "heartbeat lost the checked-out copy"
+            # A lapsed copy is taken again by the heartbeat, if one is free.
+            state.checkouts.clear()
+            beat = app("heartbeat", "service-config", binding=HOST_D, module="solver")
+            assert beat["lease"]["checkouts"] == ["solver"], "heartbeat did not take a lapsed copy again"
+            state.checkouts = {"another-machine": {"solver"}}
+            denied("heartbeat", "no_free_copy", "service-config", binding=HOST_D, module="solver")
+            state.checkouts.clear()
+            print("PASS: floating checkout, exhausted pool, checkin and heartbeat renewal", flush=True)
+
+            # A module whose seat is on another machine is named in the lease.
+            state.elsewhere = ["server"]
+            lease = app("lease", "service", binding=HOST_C)
+            assert lease["elsewhere"] == ["server"], "lease lost its elsewhere modules"
+            denied("require", "module_denied", "service", binding=HOST_C, module="server")
+            state.elsewhere, state.floating = [], []
+            print("PASS: modules seated elsewhere are refused, and named", flush=True)
     finally:
         server.shutdown()
         server.server_close()
