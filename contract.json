@@ -1,12 +1,12 @@
 {
   "protocol": 3,
-  "revision": 16,
+  "revision": 17,
   "algorithm": "ed25519-mldsa65",
-  "reference_go": "v0.10.0",
+  "reference_go": "v0.11.0",
   "clients": {
     "go": {
       "repository": "licensebox/go",
-      "release": "v0.10.0"
+      "release": "v0.11.0"
     },
     "python": {
       "repository": "licensebox/python",
