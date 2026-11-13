@@ -1,24 +1,24 @@
 {
   "protocol": 3,
-  "revision": 15,
+  "revision": 16,
   "algorithm": "ed25519-mldsa65",
-  "reference_go": "v0.8.1",
+  "reference_go": "v0.10.0",
   "clients": {
     "go": {
       "repository": "licensebox/go",
-      "release": "v0.8.1"
+      "release": "v0.10.0"
     },
     "python": {
       "repository": "licensebox/python",
-      "release": "v0.3.0"
+      "release": "v0.4.0"
     },
     "javascript": {
       "repository": "licensebox/javascript",
-      "release": "v0.3.0"
+      "release": "v0.4.0"
     },
     "c": {
       "repository": "licensebox/c",
-      "release": "v0.5.0"
+      "release": "v0.6.0"
     },
     "cpp": {
       "repository": "licensebox/cpp",
